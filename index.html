@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Numerosity</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.0.0-rc.7/dist/html2canvas.min.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="auth.js"></script>
+    <script src="questions.js"></script>
+    <script src="stats.js"></script>
+    <script src="friends.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Numerosity</h1>
+        <div id="auth-container">
+            <div id="login-form">
+                <h2>Login</h2>
+                <input type="text" id="login-username" placeholder="Username">
+                <input type="password" id="login-password" placeholder="Password">
+                <button onclick="login()">Login</button>
+                <p>Don't have an account? <a href="#" onclick="showSignUp()">Sign Up</a></p>
+            </div>
+            <div id="signup-form" style="display:none;">
+                <h2>Sign Up</h2>
+                <input type="text" id="signup-username" placeholder="Username">
+                <input type="password" id="signup-password" placeholder="Password">
+                <button onclick="signUp()">Sign Up</button>
+                <p>Already have an account? <a href="#" onclick="showLogin()">Login</a></p>
+            </div>
+        </div>
+        <div id="question-container" style="display:none;">
+            <div id="question"></div>
+            <div id="options"></div>
+            <button onclick="submitAnswer()">Submit</button>
+        </div>
+        <div id="stats-container" style="display:none;">
+            <h2>Your Stats</h2>
+            <div id="streaks"></div>
+            <canvas id="time-per-question-chart"></canvas>
+            <div id="question-types"></div>
+            <button onclick="shareStats()">Share</button>
+        </div>
+        <div id="friends-container" style="display:none;">
+            <h2>Friends</h2>
+            <input type="text" id="add-friend-username" placeholder="Add Friend">
+            <button onclick="addFriend()">Add</button>
+            <div id="friends-list"></div>
+        </div>
+    </div>
+</body>
+</html>
