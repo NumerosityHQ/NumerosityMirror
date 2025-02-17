@@ -1,8 +1,0 @@
-{
-    "2025-02-16": {
-        "question": "What is the capital of France?",
-        "options": ["Berlin", "Madrid", "Paris", "Lisbon"],
-        "answer": 2,
-        "explanation": "The capital of France is Paris."
-    }
-}
