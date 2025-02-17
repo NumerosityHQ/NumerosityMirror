@@ -2,86 +2,38 @@ body {
     background-color: black;
     color: white;
     font-family: 'Roboto', sans-serif;
-    margin: 0;
-    padding: 0;
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
+    height: 100vh;
+    margin: 0;
 }
 
-.container {
-    max-width: 800px;
-    width: 100%;
-    margin: 0 20px;
-    padding: 20px;
-    border: 1px solid white;
-    border-radius: 10px;
-    background-color: #222;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-}
-
-h1, h2 {
+#app {
     text-align: center;
-    color: white;
+    max-width: 600px;
+    width: 90%;
 }
 
-input, button {
-    display: block;
-    width: calc(100% - 20px);
-    margin: 10px auto;
+#question-container {
+    margin: 20px 0;
+}
+
+.option {
+    margin: 10px 0;
     padding: 10px;
     border: 1px solid white;
-    border-radius: 5px;
-    background-color: #333;
-    color: white;
-}
-
-button {
     cursor: pointer;
 }
 
-button:hover {
-    background-color: #555;
-}
-
-.correct {
+.option.correct {
     background-color: lightgreen;
 }
 
-.wrong {
+.option.incorrect {
     background-color: lightcoral;
 }
 
-#options div {
-    margin: 5px 0;
-    padding: 10px;
-    cursor: pointer;
-    border: 1px solid white;
-    border-radius: 5px;
-}
-
-#options div:hover {
-    background-color: #444;
-}
-
-#stats-container canvas {
-    width: 100% !important;
-    height: auto !important;
-}
-
-/* Responsive design adjustments */
-@media (max-width: 600px) {
-    .container {
-        padding: 10px;
-    }
-
-    input, button {
-        width: calc(100% - 10px);
-        padding: 8px;
-    }
-
-    #options div {
-        padding: 8px;
-    }
+#feedback {
+    margin-top: 20px;
 }

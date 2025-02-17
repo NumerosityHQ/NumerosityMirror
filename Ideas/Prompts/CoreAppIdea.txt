@@ -1,0 +1,36 @@
+Create a template for a web app that does the following:
+Read questions from a database of text files and display the question, have a space for multiple choice answer options that are described in the text file in the format (you can also consider what format works the best when trying to parse the information when it is in a .txt file):
+If the holistic solution does not make any sense, try to find another solution and explain your soluition before you start working on the project.
+```
+Parse date, type, question, options, answer and explanation from the question.json files.
+````
+The user must be able to select answers, and once done, ask them to verify that it is the answer they want to submit and then show whether their answer is correct or not. Do not show the correct answer.
+
+In the database of questions, each will have a different date. Make sure the question corresponds to the day the site has been loaded by the user with the system clock / IP address.
+
+The user must also be able to make an account with just an email and password, preferably username and password without the need to use the @email.com part with Google Firebase.
+
+The data must be stored in google Firebase Firestone.
+
+_____________________________________________________________________
+
+As of styling, the font must be roboto site wide and dark mode with white text by default. Make sure it scales well across desktop and mobile devices (responsive). The color palette is : 
+Black background 
+White text in Roboto font
+Correct answer's box highlighted in light green if the user chose the right answer
+Wrong answer's box highlighted in light red if the user chose the wrong answer
+_____________________________________________________________________
+
+Database setup and ideas:
+The questions are all parsed from the database like mentioned before, but for the correct answers, in the json format found in Database/Storage/Correct or Database/Storage/Incorrect, a new JSON file must be created for each answer solved. No matter what the case is, whether it's part of a question bank, if it's part of the faily or part of the rush. You will also notice that there is a group1.json file, and a new json file must be created every time a new puzzle rush session or a question bank is created. If a question bank is created, then the questions that the site generates should be listed in and those questions must be loaded when the user enters the feature. Note that anything in the storage folder must be saved in firebase Firestone since it cannot be accessed as part of the static user interface.
+
+If you have a better solution then go for it but mention what you are doing before you do so!
+
+_____________________________________________________________________
+
+Question setup:
+Each subject level has its own folder, with three subfolders in for difficulty -- this allows for easy tagging for new questions added. The JSON file contents have data points and the questions shall be loaded / rendered in as it says. Obviously, the answer and explanation must be shown only if the user selects to do so.
+_____________________________________________________________________
+
+Ultimately what to work on:
+Focus on just the daily question featureset, do not worry about thge settings page, profile page, etc. The UI setup can be found under Sketches/Proper and contains the logic to what triggers the UI elements.
