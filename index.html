@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Quiz</title>
+    <link rel="stylesheet" href="styles.css">
+    <script defer src="app.js"></script>
+    <!-- MathJax for LaTeX rendering -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/core-js/3.19.1/minified.js"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+</head>
+
+<body>
+    <div class="quiz-container">
+        <div id="question-container">
+            <h2 id="question"></h2>
+            <div class="options">
+                <label>
+                    <input type="radio" name="option" value="a">
+                    <span id="option_a"></span>
+                </label>
+                <label>
+                    <input type="radio" name="option" value="b">
+                    <span id="option_b"></span>
+                </label>
+                <label>
+                    <input type="radio" name="option" value="c">
+                    <span id="option_c"></span>
+                </label>
+                <label>
+                    <input type="radio" name="option" value="d">
+                    <span id="option_d"></span>
+                </label>
+            </div>
+            <button id="submit">Submit</button>
+        </div>
+        <div id="result-container" class="hidden">
+            <h2 id="result"></h2>
+            <p id="explanation"></p>
+            <button id="next">Next Question</button>
+        </div>
+    </div>
+</body>
+
+</html>

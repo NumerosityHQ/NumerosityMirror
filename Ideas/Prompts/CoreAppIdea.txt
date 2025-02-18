@@ -31,6 +31,19 @@ And an example could be as follows:
     "explanation":"\( x = 5 - 1 \)
                    \( x = 4 \)"
 }
-If it is a hard question from Precalculus, then you must rerieve the question form the Precalculus folder and the hard folder.
 4. Make sure to keep track of what questions have been answered already, and if they got it right or wrong -- this should have been done before in the third step -- but find a efficient way so that the same question is not given to them again if there are thousands of questions in the database.
 5. Also consider the fact that the questions are formatted in LATEX and you must parse the information correctly -- this done so that symbols like the integral symbol can be typed out.
+
+_____________________________________________________________________
+
+
+Deliverables:
+HTML file
+CSS file
+JS Files needed
+Sample JSON question files
+Firebase Firestone Ruleset
+
+_____________________________________________________________________
+
+Complete one file at a time thoroughly, and I continue with the proompt in another response for every new file.
