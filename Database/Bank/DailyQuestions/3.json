@@ -1,0 +1,11 @@
+{
+    "date":"first value",
+    "type":"Daily",
+    "question":"third value",
+    "option_a":"fourth value",
+    "option_b":"fifth value",
+    "option_c":"sixth value",
+    "option_d":"seventh value",
+    "answer":"eight value",
+    "explanation":"ninth value"
+  }

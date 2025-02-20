@@ -33,10 +33,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Load questions from local JSON file
     async function loadQuestions() {
-        const response = await fetch('questions.json');
+        const today = new Date().toISOString().split('T')[0];
+        const response = await fetch(`Bank/DailyQuestions/${today}.json`);
         questions = await response.json();
         loadQuestion();
     }
+
+    // Log result to Firebase storage
+    async function logResult(result) {
+        const logType = result.correct ? 'correct' : 'incorrect';
+        const logRef = db.collection(logType).doc();
+        await logRef.set(result);
+
+        const attemptedRef = db.collection('attemptedquestions').doc();
+        await attemptedRef.set(result);
+    }
+
+    // Submit answer
+    submitButton.addEventListener('click', async () => {
+        const selectedOption = document.querySelector('input[name="option"]:checked');
+        if (selectedOption) {
+            const isCorrect = selectedOption.value === currentQuestion.answer;
+            resultElement.innerHTML = isCorrect ? 'Correct!' : 'Incorrect.';
+            explanationElement.innerHTML = currentQuestion.explanation;
+            MathJax.typeset(); // Render LaTeX
+
+            // Store result locally and log to Firebase
+            const result = {
+                questionId: currentIndex - 1,
+                correct: isCorrect,
+                timestamp: new Date()
+            };
+            answeredQuestions.add(result);
+            await logResult(result);
+
+            questionContainer.classList.add('hidden');
+            resultContainer.classList.remove('hidden');
+        } else {
+            alert('Please select an option.');
+        }
+    });
 
     // Load a new question
     function loadQuestion() {
