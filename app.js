@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Load questions from local JSON file
     async function loadQuestions() {
         const today = new Date().toISOString().split('T')[0];
-        const response = await fetch(`Bank/DailyQuestions/${today}.json`);
+        const response = await fetch(`Database/Bank/DailyQuestions/${today}.json`);
         questions = await response.json();
         loadQuestion();
     }
