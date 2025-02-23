@@ -1,0 +1,14 @@
+[
+  {
+    "date": "02/17/2025",
+    "type": "Hard",
+    "level": "Precalculus",
+    "question": "\\( x + 1 = 5 \\)",
+    "option_a": "1",
+    "option_b": "2",
+    "option_c": "3",
+    "option_d": "4",
+    "answer": "d",
+    "explanation": "\\( x = 5 - 1 \\)\n\\( x = 4 \\)"
+  }
+]
