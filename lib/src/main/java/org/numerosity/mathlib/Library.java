@@ -7,4 +7,8 @@ public class Library {
     public boolean someLibraryMethod() {
         return true;
     }
+    public String testing(boolean x, boolean y, boolean z) {
+        String temp = "You entered: " + x + "  " + y + " " + z;
+        return temp;
+    }
 }
