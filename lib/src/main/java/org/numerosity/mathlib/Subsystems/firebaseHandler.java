@@ -7,28 +7,31 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 
-public class firebaseHandler {
+public class FirebaseHandler {
     private String databaseUrl;
     private String pathToKey;
 
-    public void initialize() throws IOException {
-        FileInputStream serviceAccount = new FileInputStream("lib/keys/firebase.json");
-       // FileInputStream serviceAccoutn = new FileInputStream("pathToKey");
-        FirebaseOptions options = FirebaseOptions.builder()
-            .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-            .setDatabaseUrl(databaseUrl) // https://numerosity-583f5-default-rtdb.firebaseio.com/
-            .build();
-        FirebaseApp.initializeApp(options);
-    }
-    
-    public void setDatabaseUrl(String url) {
-        databaseUrl = url;    
+    public FirebaseHandler(String databaseUrl) {
+        this.databaseUrl = databaseUrl;
     }
 
-    public void setPathToKey(String path) {
-        pathToKey = path;
+    public void initialize() throws IOException {
+        FileInputStream serviceAccount = new FileInputStream(pathToKey); // Use pathToKey
+        FirebaseOptions options = FirebaseOptions.builder()
+                .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                .setDatabaseUrl(databaseUrl)
+                .build();
+        FirebaseApp.initializeApp(options);
     }
+
+    public void setPathToKey(String pathToKey) {
+        this.pathToKey = pathToKey;
+    }
+
+    // No longer need to setDatabaseURL
 }
+
+
 
 /*
 
