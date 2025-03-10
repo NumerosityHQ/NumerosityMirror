@@ -3,6 +3,7 @@ package org.numerosity.mathlib;
 import org.numerosity.mathlib.Subsystems.DatabaseHandler;
 
 public class Main {
+    @SuppressWarnings("CallToPrintStackTrace")
     public static void main(String[] args) {
         try {
             String serviceAccountPath = "path/to/your/serviceAccountKey.json"; // Replace with the actual path

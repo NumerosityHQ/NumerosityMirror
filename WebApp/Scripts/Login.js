@@ -1,3 +1,0 @@
-/*
-Authentication and login with firebase API
-*/
