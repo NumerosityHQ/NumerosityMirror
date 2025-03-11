@@ -11,7 +11,7 @@ import com.google.cloud.firestore.Firestore;
 
 public class DatabaseHandler {
     private final Firestore firestore;
-    
+
     public DatabaseHandler(Firestore firestore) {
         this.firestore = firestore;
     }
@@ -25,11 +25,12 @@ public class DatabaseHandler {
         userData.put("wrong", 0);
         userData.put("answered", 0);
         userData.put("unattempted", 0);
-        
+
         docRef.set(userData).get();
     }
 
-    public void updateStatistic(String userId, String field, int delta) throws ExecutionException, InterruptedException {
+    public void updateStatistic(String userId, String field, int delta)
+            throws ExecutionException, InterruptedException {
         DocumentReference docRef = firestore.collection("users").document(userId);
         Map<String, Object> updates = new HashMap<>();
         updates.put(field, FieldValue.increment(delta));
@@ -37,11 +38,31 @@ public class DatabaseHandler {
     }
 
     // Add specific helper methods for common operations
-    public void incrementCorrect(String userId) throws ExecutionException, InterruptedException {
-        updateStatistic(userId, "correct", 1);
+    // public void incrementCorrect(String userId) throws ExecutionException,
+    // InterruptedException{
+    // updateStatistic(userId, "correct", 1);
+    // }
+
+    // public void incrementWrong(String userId) throws ExecutionException,
+    // InterruptedException {
+    // updateStatistic(userId, "wrong", 1);
+    // }
+
+    public void incrementCorrect(String userId) {
+        try {
+            updateStatistic(userId, "correct", 1);
+        } catch (ExecutionException | InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
-    public void incrementWrong(String userId) throws ExecutionException, InterruptedException {
-        updateStatistic(userId, "wrong", 1);
+    public void incrementWrong(String userId) {
+        try {
+            updateStatistic(userId, "wrong", 1);
+        } catch (ExecutionException | InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 }

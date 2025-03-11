@@ -8,6 +8,7 @@ import org.numerosity.mathlib.Subsystems.FirestoneClient;
 import org.numerosity.mathlib.Subsystems.LocalDatabaseHandler;
 import org.numerosity.mathlib.Subsystems.QuestionLoader;
 // import org.numerosity.mathlib.subsystems.FirestoneClient;
+import org.numerosity.mathlib.Subsystems.ResponseHandler;
 
 public class Library {
     private final FirebaseHandler firebaseHandler;
@@ -53,5 +54,10 @@ public class Library {
 
     public boolean libraryCheck() {
         return true;
+    }
+
+    public ResponseHandler getResponseHandler() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getResponseHandler'");
     }
 }

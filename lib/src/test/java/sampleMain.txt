@@ -17,17 +17,17 @@ import org.slf4j.LoggerFactory;
 public class Main {
 
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
+
     public static void main(String[] args) {
-        String directory = "Database/Bank/AlgebraOne/Easy";
         Scanner scanner = new Scanner(System.in);
         Random random = new Random();
 
         try {
-            String serviceAccountPath = "path/to/your/serviceAccountKey.json"; // Replace with the actual path
-            String firebaseURL = "https://numerosity-583f5-default-rtdb.firebaseio.com/";
-            String projectId = "numerosity-583f5";
+            String firebaseUrl = "your_firebase_url";  // Replace with your Firebase URL
+            String serviceAccountPath = "path/to/your/serviceAccountKey.json"; // Replace with your path
+            String projectId = "your_project_id";  // Replace with your project ID
 
-            Library lib = new Library(firebaseURL, serviceAccountPath, projectId);
+            Library lib = new Library(firebaseUrl, serviceAccountPath, projectId);
             LocalDatabaseHandler localDbHandler = new LocalDatabaseHandler();
             DatabaseHandler dbHandler = new DatabaseHandler(FirestoneClient.getFirestore());
             DataPlotter dataPlotter = new DataPlotter();
@@ -42,7 +42,7 @@ public class Main {
             String questionTag = "math";
 
             // Load the question
-            String questionText = lib.getQuestionLoader().loadAsText(directory, questionId);
+            String questionText = lib.getQuestionLoader().loadAsText("questions", questionId);
 
             // Present the question to the user
             System.out.println("Question: " + questionText);

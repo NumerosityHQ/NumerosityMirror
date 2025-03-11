@@ -31,18 +31,16 @@ public class FirebaseHandler {
     // No longer need to setDatabaseURL
 }
 
-
-
 /*
-
- To use firebase featureset in code:
- import com.google.firebase.auth.FirebaseAuth;
- import com.google.firebase.auth.UserRecord;
-
- UserRecord.CreateRequest request = new UserRecord.CreateRequest()
-    .setEmail("user@example.com")
-    .setPassword("secretPassword");
- UserRecord userRecord = FirebaseAuth.getInstance().createUser(request);
- System.out.println("Successfully created new user: " + userRecord.getUid());
- 
+ * 
+ * To use firebase featureset in code:
+ * import com.google.firebase.auth.FirebaseAuth;
+ * import com.google.firebase.auth.UserRecord;
+ * 
+ * UserRecord.CreateRequest request = new UserRecord.CreateRequest()
+ * .setEmail("user@example.com")
+ * .setPassword("secretPassword");
+ * UserRecord userRecord = FirebaseAuth.getInstance().createUser(request);
+ * System.out.println("Successfully created new user: " + userRecord.getUid());
+ * 
  */
