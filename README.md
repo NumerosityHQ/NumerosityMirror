@@ -1,2 +1,2 @@
 # Numerosity
-Behind the scenes of the world's next biggest Math website.
+Behind the scenes of the world's next biggest Math library for Java.
