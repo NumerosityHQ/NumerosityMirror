@@ -1,0 +1,15 @@
+
+// For each question answered, there should be a new plot with time taken to solve, correct or wrong, what question ID it was, and when it was solved
+  {
+    "user_id": null,
+    "id": "a",
+    "correct": false,
+    "time": null,
+    "difficulty": "easy",
+    "question_tag": null,
+    "answered_at": null,
+    "updated_at": null
+  }
+
+  
+  

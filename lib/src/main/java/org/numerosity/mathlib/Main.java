@@ -25,12 +25,12 @@ public class Main {
 
             // Load question
             String directory = "src/main/java/org/numerosity/Database"; // currently gets it from questions folder
-            String latex = lib.getQuestionLoader().loadAsLatex("questions", "q1");
+            String latex = lib.getQuestionLoader().loadAsLatex("Questions/AlgebraOne/Easy", "q1");
             System.out.println("LaTeX question: " + latex);
             // Display answer
             System.out.println("Answer: " + 
                                             lib.getLocalDbHandler()
-                                            .loadQuestion("questions", "q1")
+                                            .loadQuestion("Questions/AlgebraOne/Easy", "q1")
                                             .get("correct_option_id"));
          
         } catch (Exception e) {
