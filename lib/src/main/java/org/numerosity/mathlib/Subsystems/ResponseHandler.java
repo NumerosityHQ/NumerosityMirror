@@ -1,0 +1,1 @@
+// Manage time taken, validate response, and update via databasehandler and dataplotter.

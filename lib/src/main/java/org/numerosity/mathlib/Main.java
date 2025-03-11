@@ -1,5 +1,6 @@
 package org.numerosity.mathlib;
 
+import org.numerosity.mathlib.Subsystems.DataPlotter;
 import org.numerosity.mathlib.Subsystems.DatabaseHandler;
 
 public class Main {
@@ -24,15 +25,18 @@ public class Main {
             // "answer", 4));
 
             // Load question
-            String directory = "src/main/java/org/numerosity/Database"; // currently gets it from questions folder
-            String latex = lib.getQuestionLoader().loadAsLatex("Questions/AlgebraOne/Easy", "q1");
+            String directory = "Database/Bank/AlgebraOne/Easy";
+            String latex = lib.getQuestionLoader().loadAsLatex(directory, "q1");
             System.out.println("LaTeX question: " + latex);
             // Display answer
-            System.out.println("Answer: " + 
-                                            lib.getLocalDbHandler()
-                                            .loadQuestion("Questions/AlgebraOne/Easy", "q1")
-                                            .get("correct_option_id"));
-         
+            System.out.println("Answer: " +
+                    lib.getLocalDbHandler()
+                            .loadQuestion(directory, "q1")
+                            .get("correct_option_id"));
+
+            DataPlotter plotter = new DataPlotter();
+            plotter.plotData("Developer", "q2", true, 5000, "easy", "math");
+
         } catch (Exception e) {
             e.printStackTrace();
         }
