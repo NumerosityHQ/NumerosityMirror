@@ -14,8 +14,8 @@ public class Main {
 
             // Firebase operations
             DatabaseHandler db = lib.getDatabaseHandler();
-            db.createUserDocument("user123", "math_learner");
-            db.incrementCorrect("user123");
+            db.createUserDocument("DeveloperID", "Developer");
+            db.incrementCorrect("DeveloperID");
 
             // Local database operations -- save a new question
             // lib.getLocalDbHandler().saveQuestion("questions", "q1", Map.of(

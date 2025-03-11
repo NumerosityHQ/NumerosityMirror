@@ -1,0 +1,46 @@
+\doxysection{Main.\+java}
+\hypertarget{_main_8java_source}{}\label{_main_8java_source}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00001}00001\ \textcolor{keyword}{package\ }org.numerosity.mathlib;}
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00002}00002\ }
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00003}00003\ \textcolor{keyword}{import}\ org.numerosity.mathlib.Subsystems.DatabaseHandler;}
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00004}00004\ }
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00005}\mbox{\hyperlink{classorg_1_1numerosity_1_1mathlib_1_1_main}{00005}}\ \textcolor{keyword}{public}\ \textcolor{keyword}{class\ }\mbox{\hyperlink{classorg_1_1numerosity_1_1mathlib_1_1_main}{Main}}\ \{}
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00006}00006\ \ \ \ \ @SuppressWarnings(\textcolor{stringliteral}{"{}CallToPrintStackTrace"{}})}
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00007}00007\ \ \ \ \ \textcolor{keyword}{public}\ \textcolor{keyword}{static}\ \textcolor{keywordtype}{void}\ main(String[]\ args)\ \{}
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00008}00008\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{try}\ \{}
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00009}00009\ \ \ \ \ \ \ \ \ \ \ \ \ String\ serviceAccountPath\ =\ \textcolor{stringliteral}{"{}path/to/your/serviceAccountKey.json"{}};\ \textcolor{comment}{//\ Replace\ with\ the\ actual\ path}}
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00010}00010\ \ \ \ \ \ \ \ \ \ \ \ \ String\ firebaseURL\ =\ \textcolor{stringliteral}{"{}https://numerosity-\/583f5-\/default-\/rtdb.firebaseio.com/"{}};}
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00011}00011\ \ \ \ \ \ \ \ \ \ \ \ \ String\ projectId\ =\ \textcolor{stringliteral}{"{}numerosity-\/583f5"{}};}
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00012}00012\ }
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00013}00013\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{classorg_1_1numerosity_1_1mathlib_1_1_library}{Library}}\ lib\ =\ \textcolor{keyword}{new}\ \mbox{\hyperlink{classorg_1_1numerosity_1_1mathlib_1_1_library}{Library}}(firebaseURL,\ serviceAccountPath,\ projectId);}
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00014}00014\ }
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00015}00015\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Firebase\ operations}}
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00016}00016\ \ \ \ \ \ \ \ \ \ \ \ \ \mbox{\hyperlink{classorg_1_1numerosity_1_1mathlib_1_1_subsystems_1_1_database_handler}{DatabaseHandler}}\ db\ =\ lib.getDatabaseHandler();}
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00017}00017\ \ \ \ \ \ \ \ \ \ \ \ \ db.createUserDocument(\textcolor{stringliteral}{"{}DeveloperID"{}},\ \textcolor{stringliteral}{"{}Developer"{}});}
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00018}00018\ \ \ \ \ \ \ \ \ \ \ \ \ db.incrementCorrect(\textcolor{stringliteral}{"{}DeveloperID"{}});}
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00019}00019\ }
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00020}00020\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Local\ database\ operations\ -\/-\/\ save\ a\ new\ question}}
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00021}00021\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ lib.getLocalDbHandler().saveQuestion("{}questions"{},\ "{}q1"{},\ Map.of(}}
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00022}00022\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ "{}text"{},\ "{}What's\ 2+2?"{},}}
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00023}00023\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ "{}latex"{},\ "{}2\ +\ 2\ =\ ?"{},}}
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00024}00024\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ "{}answer"{},\ 4));}}
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00025}00025\ }
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00026}00026\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Load\ question}}
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00027}00027\ \ \ \ \ \ \ \ \ \ \ \ \ String\ directory\ =\ \textcolor{stringliteral}{"{}src/main/java/org/numerosity/Database"{}};\ \textcolor{comment}{//\ currently\ gets\ it\ from\ questions\ folder}}
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00028}00028\ \ \ \ \ \ \ \ \ \ \ \ \ String\ latex\ =\ lib.getQuestionLoader().loadAsLatex(\textcolor{stringliteral}{"{}questions"{}},\ \textcolor{stringliteral}{"{}q1"{}});}
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00029}00029\ \ \ \ \ \ \ \ \ \ \ \ \ System.out.println(\textcolor{stringliteral}{"{}LaTeX\ question:\ "{}}\ +\ latex);}
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00030}00030\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Display\ answer}}
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00031}00031\ \ \ \ \ \ \ \ \ \ \ \ \ System.out.println(\textcolor{stringliteral}{"{}Answer:\ "{}}\ +\ }
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00032}00032\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ lib.getLocalDbHandler()}
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00033}00033\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ .loadQuestion(\textcolor{stringliteral}{"{}questions"{}},\ \textcolor{stringliteral}{"{}q1"{}})}
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00034}00034\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ .get(\textcolor{stringliteral}{"{}correct\_option\_id"{}}));}
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00035}00035\ \ \ \ \ \ \ \ \ \ }
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00036}00036\ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{catch}\ (Exception\ e)\ \{}
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00037}00037\ \ \ \ \ \ \ \ \ \ \ \ \ e.printStackTrace();}
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00038}00038\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00039}00039\ }
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00040}00040\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_main_8java_source_l00041}00041\ \}}
+
+\end{DoxyCode}
