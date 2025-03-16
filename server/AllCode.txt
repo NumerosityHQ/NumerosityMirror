@@ -1,0 +1,719 @@
+numerosity/config/ApplicationConfig.java - 
+package org.vaadin.numerosity.config;
+
+
+import java.io.IOException;
+import java.io.InputStream;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.vaadin.numerosity.repository.FsUserRepository;
+import org.vaadin.numerosity.repository.UserRepository;
+
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.FirestoreOptions;
+
+
+@Configuration
+public class ApplicationConfig {
+
+    @Value("${firebase.project.id}")
+    private String projectId;
+
+    @Value("${firebase.credentials.path}")
+    private String credentialsPath;
+
+
+    @Bean
+    public Firestore getFirestore() {
+        try {
+
+        InputStream inStream = this.getClass().getClassLoader().getResourceAsStream(credentialsPath);    
+        GoogleCredentials credentials = GoogleCredentials.fromStream(inStream);
+        FirestoreOptions firestoreOptions = FirestoreOptions.getDefaultInstance().toBuilder()
+                .setProjectId(projectId)
+                .setCredentials(credentials)
+                .build();
+        return firestoreOptions.getService();
+        } catch (IOException e) {
+            throw new RuntimeException("Exception while initializing Firestore", e);
+        }
+    }
+
+    @Bean
+    public UserRepository userRepository(Firestore firestore) {
+        return new FsUserRepository(firestore);
+    }
+
+}
+
+
+______________________________________________
+
+numerosity/repository/exception/DbException.java - 
+package org.vaadin.numerosity.repository.exception;
+
+public class DbException extends RuntimeException {
+
+    public DbException(String message, Throwable cause) {
+        super(message, cause);    
+    }
+
+}
+
+______________________________________________
+
+numerosity/repository/FsUserRepository/FsUserRepository.java - 
+
+// DatabaseHandler.java
+package org.vaadin.numerosity.repository;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+
+import org.vaadin.numerosity.repository.exception.DbException;
+
+import com.google.cloud.firestore.DocumentReference;
+import com.google.cloud.firestore.FieldValue;
+import com.google.cloud.firestore.Firestore;
+
+public class FsUserRepository implements UserRepository {
+
+    private final Firestore firestore;
+
+    public FsUserRepository(Firestore firestoneClient) { // was Firestore firestoneClient
+        this.firestore = firestoneClient;
+    }
+
+    @Override
+    public void createUserDocument(String userId, String username) {
+        DocumentReference docRef = firestore.collection("users").document(userId);
+        Map<String, Object> userData = new HashMap<>();
+        userData.put("username", username);
+        userData.put("created_at", new Date());
+        userData.put("correct", 0);
+        userData.put("wrong", 0);
+        userData.put("answered", 0);
+        userData.put("unattempted", 0);
+        try {
+         docRef.set(userData).get();
+        }  catch (InterruptedException | ExecutionException e) {
+            throw new DbException("Exception while creating user", e);
+        }
+    }
+
+
+    @Override
+    public void incrementCorrect(String userId) {
+        updateStatistic(userId, "correct", 1);
+
+    }
+
+    @Override
+    public void incrementWrong(String userId) {
+        updateStatistic(userId, "wrong", 1);
+    }
+
+
+    
+    private void updateStatistic(String userId, String field, int delta) {
+        DocumentReference docRef = firestore.collection("users").document(userId);
+        Map<String, Object> updates = new HashMap<>();
+        updates.put(field, FieldValue.increment(delta));
+        try {
+             docRef.update(updates).get();
+        }  catch (InterruptedException | ExecutionException e) {
+            throw new DbException("Exception while updating statistic ", e);
+        }
+    }
+}
+
+______________________________________________
+
+numerosity/repository/FsUserRepository/UserRepository.java -
+package org.vaadin.numerosity.repository;
+
+
+public interface UserRepository {
+
+    void createUserDocument(String userId, String username);
+
+    void incrementCorrect(String userId);
+
+    void incrementWrong(String userId);
+}
+
+______________________________________________
+
+
+numerosity/Subssytems/DatabaseHandler.java - 
+package org.vaadin.numerosity.Subsystems;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+
+import com.google.cloud.firestore.DocumentReference;
+import com.google.cloud.firestore.FieldValue;
+import com.google.cloud.firestore.Firestore;
+
+public class DatabaseHandler {
+    private final Firestore firestore;
+
+    public DatabaseHandler(Firestore firestore) {
+        this.firestore = firestore;
+    }
+
+    public void createUserDocument(String userId, String username) throws ExecutionException, InterruptedException {
+        DocumentReference docRef = firestore.collection("users").document(userId);
+        Map<String, Object> userData = new HashMap<>();
+        userData.put("username", username);
+        userData.put("created_at", new Date());
+        userData.put("correct", 0);
+        userData.put("wrong", 0);
+        userData.put("answered", 0);
+        userData.put("unattempted", 0);
+
+        docRef.set(userData).get();
+    }
+
+    public void updateStatistic(String userId, String field, int delta)
+            throws ExecutionException, InterruptedException {
+        DocumentReference docRef = firestore.collection("users").document(userId);
+        Map<String, Object> updates = new HashMap<>();
+        updates.put(field, FieldValue.increment(delta));
+        docRef.update(updates).get();
+    }
+
+    // Add specific helper methods for common operations
+    // public void incrementCorrect(String userId) throws ExecutionException,
+    // InterruptedException{
+    // updateStatistic(userId, "correct", 1);
+    // }
+
+    // public void incrementWrong(String userId) throws ExecutionException,
+    // InterruptedException {
+    // updateStatistic(userId, "wrong", 1);
+    // }
+
+    public void incrementCorrect(String userId) {
+        try {
+            updateStatistic(userId, "correct", 1);
+        } catch (ExecutionException | InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+    public void incrementWrong(String userId) {
+        try {
+            updateStatistic(userId, "wrong", 1);
+        } catch (ExecutionException | InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+}
+
+______________________________________________
+
+numerosity/Subssytems/DataPlotter.java - 
+package org.vaadin.numerosity.Subsystems;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.gson.Gson;
+
+// Plot data points for each user
+// For each question answered, there should be a new plot with time taken to solve, correct or wrong, what question ID it was, and when it was solved
+// Sample json file in 'test' dir and 'database/dataplots' dir
+public class DataPlotter {
+
+    private static final Logger logger = LoggerFactory.getLogger(DataPlotter.class);
+    private static final String PLOT_DIR = "database/dataplots";
+    private final Gson gson = new Gson();
+
+    public DataPlotter() {
+        // Ensure the plot directory exists
+        Path plotDirPath = Paths.get(PLOT_DIR);
+        if (!Files.exists(plotDirPath)) {
+            try {
+                Files.createDirectories(plotDirPath);
+                logger.info("Created data plot directory: {}", PLOT_DIR);
+            } catch (IOException e) {
+                logger.error("Failed to create data plot directory {}: {}", PLOT_DIR, e.getMessage(), e);
+            }
+        }
+    }
+
+    public void plotData(String userId, String questionId, boolean correct, long timeTakenMillis, String difficulty, String questionTag) {
+        try {
+            Map<String, Object> plotData = createPlotData(userId, questionId, correct, timeTakenMillis, difficulty, questionTag);
+            savePlotData(plotData);
+        } catch (IOException e) {
+            logger.error("Failed to plot data for user {} and question {}: {}", userId, questionId, e.getMessage(), e);
+        }
+    }
+
+    private Map<String, Object> createPlotData(String userId, String questionId, boolean correct, long timeTakenMillis, String difficulty, String questionTag) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("user_id", userId);
+        data.put("id", questionId);
+        data.put("correct", correct);
+        data.put("time", timeTakenMillis);
+        data.put("difficulty", difficulty);
+        data.put("question_tag", questionTag);
+
+        // Format the current timestamp
+        Instant now = Instant.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
+        .withZone(ZoneId.of("UTC"));
+        String timestamp = formatter.format(now);
+
+        data.put("answered_at", timestamp);
+        data.put("updated_at", timestamp);
+        return data;
+    }
+
+    private void savePlotData(Map<String, Object> plotData) throws IOException {
+        String userId = (String) plotData.get("user_id");
+        String questionId = (String) plotData.get("id");
+        if (userId == null || userId.isEmpty() || questionId == null || questionId.isEmpty()) {
+            logger.warn("User ID or Question ID is missing. Cannot save plot data.");
+            return;
+        }
+
+        // Create a unique filename for each plot
+        String filename = String.format("%s_%s_%s.json", userId, questionId, Instant.now().toEpochMilli());
+        Path filePath = Paths.get(PLOT_DIR, filename).toAbsolutePath();
+
+        try {
+            String jsonData = gson.toJson(plotData);
+            Files.write(filePath, jsonData.getBytes());
+            logger.info("Saved plot data to: {}", filePath);
+        } catch (IOException e) {
+            logger.error("Failed to save plot data to {}: {}", filePath, e.getMessage(), e);
+            throw e; // Re-throw the exception after logging
+        }
+    }
+}
+
+______________________________________________
+
+Numerosity/Subsystems/FirebaseHandler.java - 
+package org.vaadin.numerosity.Subsystems;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.FirebaseOptions;
+
+public class FirebaseHandler {
+    private String databaseUrl;
+    private String pathToKey;
+
+    public FirebaseHandler(String databaseUrl) {
+        this.databaseUrl = databaseUrl;
+    }
+
+    public void initialize() throws IOException {
+        FileInputStream serviceAccount = new FileInputStream(pathToKey); // Use pathToKey
+        FirebaseOptions options = FirebaseOptions.builder()
+                .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                .setDatabaseUrl(databaseUrl)
+                .build();
+        FirebaseApp.initializeApp(options);
+    }
+
+    public void setPathToKey(String pathToKey) {
+        this.pathToKey = pathToKey;
+    }
+
+    // No longer need to setDatabaseURL
+}
+
+/*
+ * 
+ * To use firebase featureset in code:
+ * import com.google.firebase.auth.FirebaseAuth;
+ * import com.google.firebase.auth.UserRecord;
+ * 
+ * UserRecord.CreateRequest request = new UserRecord.CreateRequest()
+ * .setEmail("user@example.com")
+ * .setPassword("secretPassword");
+ * UserRecord userRecord = FirebaseAuth.getInstance().createUser(request);
+ * System.out.println("Successfully created new user: " + userRecord.getUid());
+ * 
+ */
+
+
+ ______________________________________________
+
+ numerosity/subsystems/FirestoneClient.java - 
+ package org.vaadin.numerosity.Subsystems;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.FirestoreOptions;
+
+/*
+ * public class FirestoreClient { // Renamed class
+    private static Firestore firestoreInstance;
+
+    public static synchronized void initialize(String projectId, String credentialsPath) throws IOException {
+        if (firestoreInstance != null) return;
+        // Rest of the code remains the same
+    }
+}
+
+ */
+public class FirestoneClient {
+
+    private static Firestore firestoreInstance;
+
+    /**
+     * Initializes the Firestore client with the given project ID and credentials file.
+     *
+     * @param projectId The Google Cloud project ID.
+     * @param credentialsPath The path to the service account key JSON file.
+     * @throws IOException If there is an issue reading the credentials file.
+     */
+    public static synchronized void initialize(String projectId, String credentialsPath) throws IOException {
+        if (firestoreInstance != null) return;
+        if (firestoreInstance == null) {
+            FileInputStream serviceAccount = new FileInputStream(credentialsPath);
+
+            FirestoreOptions firestoreOptions = FirestoreOptions.getDefaultInstance().toBuilder()
+                    .setProjectId(projectId)
+                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                    .build();
+
+            firestoreInstance = firestoreOptions.getService();
+        }
+    }
+
+    /**
+     * Returns the initialized Firestore instance.
+     *
+     * @return The Firestore instance.
+     * @throws IllegalStateException If the client has not been initialized.
+     */
+    public static Firestore getFirestore() {
+        if (firestoreInstance == null) {
+            throw new IllegalStateException("FirestoreClient has not been initialized. Call initialize() first.");
+        }
+        return firestoreInstance;
+    }
+}
+
+______________________________________________
+
+numerosity/subsystems/LocalDatabaseHandler.java - 
+package org.vaadin.numerosity.Subsystems;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+public class LocalDatabaseHandler {
+    private final Gson gson = new Gson();
+
+    public void saveQuestion(String directory, String questionId, Map<String, Object> questionData) throws IOException {
+        Path dirPath = Paths.get(directory);
+        if (!Files.exists(dirPath)) {
+            Files.createDirectories(dirPath); // Create directory if missing
+        }
+        Path path = dirPath.resolve(questionId + ".json");
+        Files.write(path, gson.toJson(questionData).getBytes());
+    }
+
+    public Map<String, Object> loadQuestion(String directory, String questionId) throws IOException {
+        Path path = Paths.get(directory, questionId + ".json");
+        if (!Files.exists(path)) {
+            throw new IOException("Question file not found: " + path);
+        }
+        String content = new String(Files.readAllBytes(path));
+        return gson.fromJson(content, new TypeToken<HashMap<String, Object>>() {}.getType());
+    }
+}
+
+______________________________________________
+
+numerosity/subsystems/questionLoader.java - 
+package org.vaadin.numerosity.Subsystems;
+
+import java.util.Map;
+
+public class QuestionLoader {
+    private final LocalDatabaseHandler localDb;
+
+    public QuestionLoader(LocalDatabaseHandler localDb) {
+        this.localDb = localDb;
+    }
+
+    public String loadAsText(String directory, String questionId) throws Exception {
+        Map<String, Object> question = localDb.loadQuestion(directory, questionId);
+        if (!question.containsKey("text")) {
+            throw new IllegalArgumentException("Question has no 'text' field");
+        }
+        return question.get("text").toString();
+    }
+
+    public String loadAsLatex(String directory, String questionId) throws Exception {
+        Map<String, Object> question = localDb.loadQuestion(directory, questionId);
+        if (!question.containsKey("latex")) {
+            throw new IllegalArgumentException("Question has no 'latex' field");
+        }
+        return question.get("latex").toString();
+    }
+}
+
+
+______________________________________________
+
+numerosity/subsytems/responsehandler.java - 
+package org.vaadin.numerosity.Subsystems;
+
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import org.vaadin.numerosity.Subsystems.DatabaseHandler;
+
+public class ResponseHandler {
+
+    private static final Logger logger = LoggerFactory.getLogger(ResponseHandler.class);
+    private final LocalDatabaseHandler localDbHandler;
+    private final DatabaseHandler dbHandler;
+    private final DataPlotter dataPlotter;
+
+    public ResponseHandler(LocalDatabaseHandler localDbHandler, DatabaseHandler dbHandler, DataPlotter dataPlotter) {
+        this.localDbHandler = localDbHandler;
+        this.dbHandler = dbHandler;
+        this.dataPlotter = dataPlotter;
+    }
+
+    public ResponseResult handleResponse(String userId, String questionId, String userAnswer) {
+        Instant startTime = Instant.now();
+        boolean isCorrect = validateAnswer(questionId, userAnswer);
+        Instant endTime = Instant.now();
+        long timeTakenMillis = Duration.between(startTime, endTime).toMillis();
+
+        // Update statistics in Firestore
+        if (isCorrect) {
+            dbHandler.incrementCorrect(userId);
+        } else {
+            dbHandler.incrementWrong(userId);
+        }
+
+        return new ResponseResult(isCorrect, timeTakenMillis);
+    }
+
+    private boolean validateAnswer(String questionId, String userAnswer) {
+        try {
+            Map<String, Object> question = localDbHandler.loadQuestion("questions", questionId);
+            if (question != null && question.containsKey("answer")) {
+                String correctAnswer = question.get("answer").toString().trim();
+                return userAnswer.trim().equalsIgnoreCase(correctAnswer);
+            } else {
+                logger.warn("Question {} does not have a valid 'answer' field.", questionId);
+                return false;
+            }
+        } catch (Exception e) {
+            logger.error("Error loading question {} for answer validation: {}", questionId, e.getMessage(), e);
+            return false;
+        }
+    }
+
+    public void plotData(String userId, String questionId, boolean isCorrect, long timeTakenMillis, String difficulty,
+            String questionTag) {
+        dataPlotter.plotData(userId, questionId, isCorrect, timeTakenMillis, difficulty, questionTag);
+    }
+
+    public static class ResponseResult {
+        private final boolean isCorrect;
+        private final long timeTakenMillis;
+
+        public ResponseResult(boolean isCorrect, long timeTakenMillis) {
+            this.isCorrect = isCorrect;
+            this.timeTakenMillis = timeTakenMillis;
+        }
+
+        public boolean isCorrect() {
+            return isCorrect;
+        }
+
+        public long getTimeTakenMillis() {
+            return timeTakenMillis;
+        }
+    }
+}
+
+
+______________________________________________
+
+numerosity/subsystems/userhandler.java - 
+package org.vaadin.numerosity.Subsystems;
+
+import java.util.concurrent.ExecutionException;
+import org.vaadin.numerosity.Subsystems.DatabaseHandler;
+
+// create user, delete user, update user, get user and everything user related (web interferace sign up calls this)
+public class UserHandler {
+    DatabaseHandler db = new DatabaseHandler(FirestoneClient.getFirestore());
+
+    public void createUser(String username) {
+        try {
+            db.createUserDocument(username, username);
+        } catch (ExecutionException | InterruptedException e) {
+            System.out.println("User creation failed");
+        }
+    }
+}
+
+______________________________________________
+numerosity/application.java - 
+package org.vaadin.numerosity;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.server.PWA;
+import com.vaadin.flow.theme.Theme;
+
+/**
+ * The entry point of the Spring Boot application.
+ *
+ * Use the @PWA annotation make the application installable on phones, tablets
+ * and some desktop browsers.
+ *
+ */
+@SpringBootApplication
+@PWA(name = "Project Base for Vaadin with Spring", shortName = "Project Base")
+@Theme("my-theme")
+public class Application implements AppShellConfigurator {
+
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+}
+
+
+______________________________________________
+
+numerosity/buttonInteraction.java - 
+package org.vaadin.numerosity;
+
+import java.io.Serializable;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.vaadin.numerosity.repository.UserRepository;
+
+@Service
+public class ButtonInteraction implements Serializable {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    public String greet(String name) {
+        userRepository.createUserDocument(name, name);
+        return "Hahah";
+
+    }
+}
+
+
+______________________________________________
+numerosity / mainview.java - 
+package org.vaadin.numerosity;
+
+import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.router.Route;
+
+/**
+ * A sample Vaadin view class.
+ * <p>
+ * To implement a Vaadin view just extend any Vaadin component and use @Route
+ * annotation to announce it in a URL as a Spring managed bean.
+ * <p>
+ * A new instance of this class is created for every new user and every browser
+ * tab/window.
+ * <p>
+ * The main view contains a text field for getting the user name and a button
+ * that shows a greeting message in a notification.
+ */
+@Route
+public class MainView extends VerticalLayout {
+
+    /**
+     * Construct a new Vaadin view.
+     * <p>
+     * Build the initial UI state for the user accessing the application.
+     *
+     * @param service
+     *            The message service. Automatically injected Spring managed bean.
+     */
+    public MainView(ButtonInteraction service) {
+
+        // Use TextField for standard text input
+        TextField textField = new TextField("Your name");
+        textField.addClassName("bordered");
+
+        // Button click listeners can be defined as lambda expressions
+        Button button = new Button("Say hello", e -> {
+            add(new Paragraph(service.greet(textField.getValue())));
+        });
+
+        // Theme variants give you predefined extra styles for components.
+        // Example: Primary button has a more prominent look.
+        button.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
+        // You can specify keyboard shortcuts for buttons.
+        // Example: Pressing enter in this view clicks the Button.
+        button.addClickShortcut(Key.ENTER);
+
+        // Use custom CSS classes to apply styling. This is defined in
+        // styles.css.
+        addClassName("centered-content");
+
+        add(textField, button);
+    }
+}
+
+ 

@@ -1,7 +1,0 @@
-Math Featureset
-Algebra 1 - Find slopes given points, find equation given x or y intercept with slope, convert existing equation to different forms such as point slope, mention what quadrant a point is in, solve simple algebra 
-ADD FEATURES BASED ON SYLLABUS
-Algebra 2 - 
-Geometry - 
-Precalculus - 
-Calculus - 
