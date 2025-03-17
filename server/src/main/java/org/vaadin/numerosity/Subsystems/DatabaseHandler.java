@@ -5,27 +5,40 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.FieldValue;
 import com.google.cloud.firestore.Firestore;
 
-import org.springframework.stereotype.Service;
-
 @Service
 public class DatabaseHandler {
+
+    private static final Logger logger = LoggerFactory.getLogger(DatabaseHandler.class);
     private final Firestore firestore;
-    private String userId;
-    private String username;    
+    private String userId;  // Consider making this method scoped if not needed as class member
+    private String username; // Consider making this method scoped if not needed as class member
 
     public DatabaseHandler(Firestore firestore) {
         this.firestore = firestore;
     }
 
     public void createUserDocument(String userId, String username) throws ExecutionException, InterruptedException {
+        if (userId == null || userId.trim().isEmpty()) {
+            logger.error("User ID cannot be null or empty.");
+            throw new IllegalArgumentException("User ID cannot be null or empty.");  // Or handle differently
+        }
+        if (username == null || username.trim().isEmpty()) {
+            logger.error("Username cannot be null or empty.");
+            throw new IllegalArgumentException("Username cannot be null or empty.");  // Or handle differently
+        }
         this.userId = userId;
         this.username = username;
+
         DocumentReference docRef = firestore.collection("users").document(userId);
-        Map<String, Object> userData = new HashMap<>();
+        Map<String, Object> userData = new HashMap<>();  // Specify type parameters
         userData.put("username", username);
         userData.put("created_at", new Date());
         userData.put("correct", 0);
@@ -39,7 +52,7 @@ public class DatabaseHandler {
     public void updateStatistic(String userId, String field, int delta)
             throws ExecutionException, InterruptedException {
         DocumentReference docRef = firestore.collection("users").document(userId);
-        Map<String, Object> updates = new HashMap<>();
+        Map<String, Object> updates = new HashMap<>();  // Specify type parameters
         updates.put(field, FieldValue.increment(delta));
         docRef.update(updates).get();
     }
@@ -48,8 +61,7 @@ public class DatabaseHandler {
         try {
             updateStatistic(userId, "correct", 1);
         } catch (ExecutionException | InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            logger.error("Error incrementing correct count:", e);
         }
     }
 
@@ -57,8 +69,7 @@ public class DatabaseHandler {
         try {
             updateStatistic(userId, "wrong", 1);
         } catch (ExecutionException | InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            logger.error("Error incrementing wrong count:", e);
         }
     }
 }

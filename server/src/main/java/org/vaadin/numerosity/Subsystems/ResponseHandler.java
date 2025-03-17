@@ -1,12 +1,12 @@
+// ResponseHandler.java  (Adjust constructor)
 package org.vaadin.numerosity.Subsystems;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.vaadin.numerosity.Subsystems.DatabaseHandler;
 
 public class ResponseHandler {
 
@@ -14,6 +14,8 @@ public class ResponseHandler {
     private final LocalDatabaseHandler localDbHandler;
     private final DatabaseHandler dbHandler;
     private final DataPlotter dataPlotter;
+    private String userId;
+    private String questionId;
 
     public ResponseHandler(LocalDatabaseHandler localDbHandler, DatabaseHandler dbHandler, DataPlotter dataPlotter) {
         this.localDbHandler = localDbHandler;
@@ -21,7 +23,7 @@ public class ResponseHandler {
         this.dataPlotter = dataPlotter;
     }
 
-    public ResponseResult handleResponse(String userId, String questionId, String userAnswer) {
+    public ResponseResult handleResponse(String questionId, String userAnswer) {
         Instant startTime = Instant.now();
         boolean isCorrect = validateAnswer(questionId, userAnswer);
         Instant endTime = Instant.now();
@@ -39,25 +41,29 @@ public class ResponseHandler {
 
     private boolean validateAnswer(String questionId, String userAnswer) {
         try {
-            Map<String, Object> question = localDbHandler.loadQuestion("questions", questionId);
+            Map<String, Object> question = localDbHandler.loadRandomQuestion();  //Specify type
             if (question != null && question.containsKey("answer")) {
-                String correctAnswer = question.get("answer").toString().trim();
-                return userAnswer.trim().equalsIgnoreCase(correctAnswer);
+                String correctAnswer = question.get("answer").toString();
+                return correctAnswer.trim().equalsIgnoreCase(userAnswer.trim()); // Trim to avoid whitespace issues
             } else {
-                logger.warn("Question {} does not have a valid 'answer' field.", questionId);
-                return false;
+                logger.warn("Question {} does not have a valid answer field.", questionId);
+                return false; // Or throw an exception, depending on desired behavior
             }
         } catch (Exception e) {
-            logger.error("Error loading question {} for answer validation: {}", questionId, e.getMessage(), e);
-            return false;
+            logger.error("Error validating answer for question {}: {}", questionId, e.getMessage(), e);
+            return false; // Or throw an exception
         }
     }
 
-    public void plotData(String userId, String questionId, boolean isCorrect, long timeTakenMillis, String difficulty,
-            String questionTag) {
-        dataPlotter.plotData(userId, questionId, isCorrect, timeTakenMillis, difficulty, questionTag);
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
+    public void setQuestionId(String questionId) {
+        this.questionId = questionId;
+    }
+
+    //Inner class for encapsulation
     public static class ResponseResult {
         private final boolean isCorrect;
         private final long timeTakenMillis;

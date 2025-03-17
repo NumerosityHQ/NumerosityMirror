@@ -1,7 +1,7 @@
 {
-    "id": "q2",
-    "text": "What is 2 + 2?",
-    "latex": "2 + 2?",
+    "id": "q1",
+    "text": "What is 1 + 1?",
+    "latex": "1 + 1 = ?",
     "options": [
       { "id": "a", "text": "2" },
       { "id": "b", "text": "4" },
