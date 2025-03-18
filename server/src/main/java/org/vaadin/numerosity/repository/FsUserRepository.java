@@ -9,7 +9,6 @@ import java.util.concurrent.ExecutionException;
 import org.vaadin.numerosity.repository.exception.DbException;
 
 import com.google.cloud.firestore.DocumentReference;
-import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.FieldValue;
 import com.google.cloud.firestore.Firestore;
 
