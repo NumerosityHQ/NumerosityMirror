@@ -72,4 +72,11 @@ public class DatabaseHandler {
             logger.error("Error incrementing wrong count:", e);
         }
     }
+
+    // return the explanation fielf from the question
+    public String getExplanation(String questionId) throws ExecutionException, InterruptedException {
+        DocumentReference docRef = firestore.collection("questions").document(questionId);
+        Map<String, Object> questionData = docRef.get().get().getData();
+        return questionData.get("explanation").toString();
+    }
 }

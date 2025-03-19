@@ -24,4 +24,12 @@ public class ButtonInteraction implements Serializable {
         dbHandler.createUserDocument(name, name);
         return questionContentLoader.loadAsText();
     }
+
+    public void incrementAction() throws Exception {
+        dbHandler.incrementCorrect();
+    }
+
+    public void decrementAction() throws Exception {
+        dbHandler.incrementWrong();
+    }
 }

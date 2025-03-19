@@ -2,7 +2,6 @@
 package org.vaadin.numerosity;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.vaadin.numerosity.Subsystems.QuestionContentLoader;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.notification.Notification;
@@ -16,39 +15,47 @@ public class MainView extends VerticalLayout {
     @Autowired
     private ButtonInteraction buttonInteraction;
 
-    @Autowired
-    private QuestionContentLoader questionContentLoader;
-
-    // return questionContentLoader.loadAsText();
-
     public MainView() {
-        TextField nameField = new TextField("Event Handler Test");
-        // add buttons to the layout, if pressed call method return
-        // questionContentLoader.loadAsText();
-        Button testButton = new Button("Test", event -> {
+        TextField nameField = new TextField("Text");
+        // Existing button
+        Button sayHelloButton = new Button("Click:", event -> {
             try {
-                String question = questionContentLoader.loadAsText();
-                Notification.show(question);
-            } catch (Exception e) {
-                Notification.show("An error occurred: " + e.getMessage());
-                e.printStackTrace(); // Log the exception
-            }
-        });
-        Button sayHelloButton = new Button("Click", event -> {
-            try {
-                String name = nameField.getValue(); // Get the value from the text field
+                String name = nameField.getValue();
                 if (name == null || name.trim().isEmpty()) {
                     Notification.show("Please enter text");
                     return;
                 }
                 String greeting = buttonInteraction.greet(name);
                 Notification.show(greeting);
-
             } catch (Exception e) {
                 Notification.show("An error occurred: " + e.getMessage());
-                e.printStackTrace(); // Log the exception
+                e.printStackTrace();
             }
         });
-        add(nameField, sayHelloButton);
+
+        // New button calling another method
+        Button incrementAction = new Button("Increment score", event -> {
+            try {
+                String response = "Score incremented";
+                buttonInteraction.incrementAction();
+                Notification.show(response);
+            } catch (Exception e) {
+                Notification.show("An error occurred: " + e.getMessage());
+                e.printStackTrace();
+            }
+        });
+
+        // New button calling another method
+        Button decrementAction = new Button("Decrement score", event -> {
+            try {
+                String response = "Score decremented";
+                buttonInteraction.decrementAction();
+                Notification.show(response);
+            } catch (Exception e) {
+                Notification.show("An error occurred: " + e.getMessage());
+                e.printStackTrace();
+            }
+        });
+        add(nameField, sayHelloButton, decrementAction, incrementAction);
     }
 }
