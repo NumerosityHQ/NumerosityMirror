@@ -79,4 +79,14 @@ public class DatabaseHandler {
         Map<String, Object> questionData = docRef.get().get().getData();
         return questionData.get("explanation").toString();
     }
+
+    public boolean userExists(String userId) {
+        DocumentReference docRef = firestore.collection("users").document(userId);
+        try {
+            return docRef.get().get().exists();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error checking user existence", e);
+        }
+    }
+    
 }

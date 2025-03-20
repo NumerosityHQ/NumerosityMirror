@@ -73,4 +73,6 @@ public class FsUserRepository implements UserRepository {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'userExists'");
     }
+
+    
 }

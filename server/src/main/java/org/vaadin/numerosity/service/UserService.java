@@ -1,8 +1,5 @@
 package org.vaadin.numerosity.service;
 
-import java.util.Map;
-import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.vaadin.numerosity.repository.UserRepository;
@@ -21,4 +18,12 @@ public class UserService {
     }
 
     // Additional methods for user operations
+    // public String loginUser(String email, String password) {
+    //     return loginHandler.login(email, password);
+    // }
+
+    // public boolean logoutUser(String token) {
+    //     return loginHandler.logout(token);
+    // }
+
 }

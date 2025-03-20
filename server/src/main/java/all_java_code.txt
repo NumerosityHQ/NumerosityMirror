@@ -963,6 +963,16 @@ public class LocalDatabaseHandler {
  
 ====================== 
  
+==== File: C:\Git\Numerosity\server\src\main\java\org\vaadin\numerosity\Subsystems\LoginHandler.java ==== 
+ 
+package org.vaadin.numerosity.Subsystems;
+
+public class LoginHandler {
+    
+}
+ 
+====================== 
+ 
 ==== File: C:\Git\Numerosity\server\src\main\java\org\vaadin\numerosity\Subsystems\QuestionContentLoader.java ==== 
  
 //  A class is needed to appropriately load text or latex content from questions
