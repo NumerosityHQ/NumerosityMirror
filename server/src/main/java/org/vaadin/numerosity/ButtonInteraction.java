@@ -4,8 +4,6 @@ import java.io.Serializable;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.vaadin.numerosity.Subsystems.DatabaseHandler;
-import org.vaadin.numerosity.Subsystems.QuestionContentLoader;
 import org.vaadin.numerosity.repository.UserRepository;
 
 @Service
@@ -14,22 +12,21 @@ public class ButtonInteraction implements Serializable {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private DatabaseHandler dbHandler;
-
-    @Autowired
-    private QuestionContentLoader questionContentLoader;
-
-    public String greet(String name) throws Exception {
-        dbHandler.createUserDocument(name, name);
-        return questionContentLoader.loadAsText();
+    public void incrementCorrect(String userId) throws Exception {
+        userRepository.incrementCorrect(userId);
     }
 
-    public void incrementAction() throws Exception {
-        dbHandler.incrementCorrect();
+    public void incrementWrong(String userId) throws Exception {
+        userRepository.incrementWrong(userId);
     }
 
-    public void decrementAction() throws Exception {
-        dbHandler.incrementWrong();
+    public String loadQuestion() throws Exception {
+        // Placeholder for question loading logic (can be integrated with QuestionContentLoader)
+        return "Sample Question: What is 2 + 2?";
+    }
+
+    public String getExplanation() {
+        // Placeholder for explanation logic
+        return "This is an explanation for the current question.";
     }
 }

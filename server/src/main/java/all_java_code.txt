@@ -12,14 +12,10 @@ import com.vaadin.flow.theme.Theme;
 
 /**
  * The entry point of the Spring Boot application.
- *
- * Use the @PWA annotation make the application installable on phones, tablets
- * and some desktop browsers.
- *
  */
 @SpringBootApplication
-@PWA(name = "Project Base for Vaadin with Spring", shortName = "Project Base")
-@Theme(variant="Lumo.dark")
+@PWA(name = "Numerosity - Math Practice App", shortName = "Numerosity")
+@Theme(variant = "Lumo.dark")
 public class Application implements AppShellConfigurator {
 
     public static void main(String[] args) {
@@ -37,8 +33,6 @@ import java.io.Serializable;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.vaadin.numerosity.Subsystems.DatabaseHandler;
-import org.vaadin.numerosity.Subsystems.QuestionContentLoader;
 import org.vaadin.numerosity.repository.UserRepository;
 
 @Service
@@ -47,23 +41,22 @@ public class ButtonInteraction implements Serializable {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private DatabaseHandler dbHandler;
-
-    @Autowired
-    private QuestionContentLoader questionContentLoader;
-
-    public String greet(String name) throws Exception {
-        dbHandler.createUserDocument(name, name);
-        return questionContentLoader.loadAsText();
+    public void incrementCorrect(String userId) throws Exception {
+        userRepository.incrementCorrect(userId);
     }
 
-    public void incrementAction() throws Exception {
-        dbHandler.incrementCorrect();
+    public void incrementWrong(String userId) throws Exception {
+        userRepository.incrementWrong(userId);
     }
 
-    public void decrementAction() throws Exception {
-        dbHandler.incrementWrong();
+    public String loadQuestion() throws Exception {
+        // Placeholder for question loading logic (can be integrated with QuestionContentLoader)
+        return "Sample Question: What is 2 + 2?";
+    }
+
+    public String getExplanation() {
+        // Placeholder for explanation logic
+        return "This is an explanation for the current question.";
     }
 }
  
@@ -71,65 +64,53 @@ public class ButtonInteraction implements Serializable {
  
 ==== File: C:\Git\Numerosity\server\src\main\java\org\vaadin\numerosity\MainView.java ==== 
  
-// MainView.java
 package org.vaadin.numerosity;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.vaadin.numerosity.Featureset.AppFunctions.bank;
+import org.vaadin.numerosity.Featureset.AppFunctions.rush;
+import org.vaadin.numerosity.Featureset.AppFunctions.zen;
 
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouterLink;
 
-@Route("")
 public class MainView extends VerticalLayout {
 
-    @Autowired
-    private ButtonInteraction buttonInteraction;
-
     public MainView() {
-        TextField nameField = new TextField("Text");
-        // Existing button
-        Button sayHelloButton = new Button("Click:", event -> {
-            try {
-                String name = nameField.getValue();
-                if (name == null || name.trim().isEmpty()) {
-                    Notification.show("Please enter text");
-                    return;
-                }
-                String greeting = buttonInteraction.greet(name);
-                Notification.show(greeting);
-            } catch (Exception e) {
-                Notification.show("An error occurred: " + e.getMessage());
-                e.printStackTrace();
-            }
-        });
+        // Header
+        H1 header = new H1("Numerosity");
+        header.getStyle().set("text-align", "center");
+        add(header);
 
-        // New button calling another method
-        Button incrementAction = new Button("Increment score", event -> {
-            try {
-                String response = "Score incremented";
-                buttonInteraction.incrementAction();
-                Notification.show(response);
-            } catch (Exception e) {
-                Notification.show("An error occurred: " + e.getMessage());
-                e.printStackTrace();
-            }
-        });
+        // Navigation Links
+        Div navigationBar = new Div();
+        navigationBar.getStyle().set("width", "200px");
+        navigationBar.getStyle().set("border-right", "1px solid black");
+        navigationBar.getStyle().set("height", "100%");
+        navigationBar.getStyle().set("position", "fixed");
 
-        // New button calling another method
-        Button decrementAction = new Button("Decrement score", event -> {
-            try {
-                String response = "Score decremented";
-                buttonInteraction.decrementAction();
-                Notification.show(response);
-            } catch (Exception e) {
-                Notification.show("An error occurred: " + e.getMessage());
-                e.printStackTrace();
-            }
-        });
-        add(nameField, sayHelloButton, decrementAction, incrementAction);
+        RouterLink practiceLink = new RouterLink("Practice", bank.class);
+        RouterLink rushLink = new RouterLink("Rush", rush.class);
+        RouterLink dailyLink = new RouterLink("Daily", zen.class);
+
+        navigationBar.add(practiceLink, rushLink, dailyLink);
+
+        // Main Content Area
+        Div contentArea = new Div();
+        contentArea.getStyle().set("margin-left", "220px");
+        contentArea.getStyle().set("padding", "20px");
+
+        H2 welcomeMessage = new H2("Welcome to Numerosity!");
+        welcomeMessage.getStyle().set("text-align", "center");
+        contentArea.add(welcomeMessage);
+
+        HorizontalLayout layout = new HorizontalLayout(navigationBar, contentArea);
+        layout.setSizeFull();
+
+        add(layout);
     }
 }
  
@@ -187,6 +168,250 @@ public class ApplicationConfig {
         return new FsUserRepository(firestore);
     }
 
+    
+
+}
+ 
+====================== 
+ 
+==== File: C:\Git\Numerosity\server\src\main\java\org\vaadin\numerosity\Featureset\AppFunctions\bank.java ==== 
+ 
+package org.vaadin.numerosity.Featureset.AppFunctions;
+
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.router.Route;
+
+@Route("bank")
+public class bank extends VerticalLayout {
+
+    private ComboBox<String> subjectSelector = new ComboBox<>("Subject");
+    private ComboBox<String> difficultySelector = new ComboBox<>("Difficulty");
+    private ComboBox<Integer> questionCountSelector = new ComboBox<>("Number of Questions");
+    private Button startButton = new Button("Start Session");
+    private Div instructionsDiv = new Div();
+
+    public bank() {
+        setSizeFull();
+
+        // Header
+        H2 header = new H2("Bank Mode");
+        add(header);
+
+        // Subject Selector
+        subjectSelector.setItems("Algebra I", "Algebra II", "Calculus", "Geometry", "Precalculus");
+        subjectSelector.setPlaceholder("Select Subject");
+
+        // Difficulty Selector
+        difficultySelector.setItems("Easy", "Medium", "Hard");
+        difficultySelector.setPlaceholder("Select Difficulty");
+
+        // Question Count Selector
+        questionCountSelector.setItems(5, 10, 15, 20);
+        questionCountSelector.setPlaceholder("Select Number of Questions");
+
+        // Instructions
+        instructionsDiv.setText("Choose your preferences and click 'Start Session' to begin.");
+        instructionsDiv.getStyle().set("margin-top", "20px");
+
+        // Start Button
+        startButton.addClickListener(e -> startSession());
+
+        add(subjectSelector, difficultySelector, questionCountSelector, instructionsDiv, startButton);
+    }
+
+    private void startSession() {
+        String subject = subjectSelector.getValue();
+        String difficulty = difficultySelector.getValue();
+        Integer questionCount = questionCountSelector.getValue();
+
+        if (subject == null || difficulty == null || questionCount == null) {
+            instructionsDiv.setText("Please select all options before starting.");
+            return;
+        }
+
+        instructionsDiv.setText(String.format("Starting session: %s (%s) - %d questions.", subject, difficulty, questionCount));
+    }
+}
+ 
+====================== 
+ 
+==== File: C:\Git\Numerosity\server\src\main\java\org\vaadin\numerosity\Featureset\AppFunctions\rush.java ==== 
+ 
+package org.vaadin.numerosity.Featureset.AppFunctions;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.vaadin.numerosity.Subsystems.QuestionContentLoader;
+
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.router.Route;
+
+@Route("rush")
+public class rush extends VerticalLayout {
+
+    private Div questionDisplay = new Div();
+    private Button[] answerButtons = new Button[4];
+    private Div scoreDisplay = new Div();
+    private int score = 0;
+
+    private final QuestionContentLoader questionLoader;
+
+    @Autowired
+    public rush(QuestionContentLoader questionLoader) throws Exception {
+        this.questionLoader = questionLoader;
+
+        setSizeFull();
+
+        // Header
+        H2 header = new H2("Rush Mode");
+        add(header);
+
+        // Question Display
+        questionDisplay.getStyle().set("border", "1px solid black");
+        questionDisplay.setHeight("200px");
+        add(questionDisplay);
+
+        // Answer Buttons
+        // Answer Buttons
+        String answerText = "QUESTION NOT LOADED!";
+        for (int i = 0; i < 4; i++) {
+            final int index = i;
+            try {
+                if (i == 0) {
+                    answerText = questionLoader.getAnswerChoice("a");
+                }
+                if (i == 1) {
+                    answerText = questionLoader.getAnswerChoice("b");
+                }
+                if (i == 2) {
+                    answerText = questionLoader.getAnswerChoice("c");
+                }
+                if (i == 3) {
+                    answerText = questionLoader.getAnswerChoice("d");
+                }
+              //  String answerText = questionLoader.getAnswerChoice("a");
+                answerButtons[i] = new Button(answerText);
+                answerButtons[i].addClickListener(e -> {
+                    try {
+                        handleAnswer(index);
+                    } catch (Exception e1) {
+                        e1.printStackTrace();
+                    }
+                });
+                add(answerButtons[i]);
+            } catch (Exception e) {
+                // Handle any exceptions that might occur when fetching answer choice text
+                answerButtons[i] = new Button("Error loading option " + (i + 1));
+                add(answerButtons[i]);
+                e.printStackTrace();
+            }
+        }
+
+
+        // Score Display
+        scoreDisplay.setText("Score: 0");
+        add(scoreDisplay);
+
+        loadQuestion();
+    }
+
+    private void loadQuestion() {
+        try {
+            String question = questionLoader.loadAsText();
+            questionDisplay.setText(question);
+        } catch (Exception e) {
+            questionDisplay.setText("Error loading question: " + e.getMessage());
+        }
+    }
+
+    private void handleAnswer(int index) {
+        boolean isCorrect = index == 0; // Assume first option is correct for demo purposes
+
+        if (isCorrect) {
+            score++;
+            scoreDisplay.setText("Score: " + score);
+            loadQuestion();
+        } else {
+            Notification.show("Game Over! Final Score: " + score);
+            resetGame();
+        }
+    }
+
+    private void resetGame() {
+        score = 0;
+        scoreDisplay.setText("Score: 0");
+    }
+}
+ 
+====================== 
+ 
+==== File: C:\Git\Numerosity\server\src\main\java\org\vaadin\numerosity\Featureset\AppFunctions\zen.java ==== 
+ 
+package org.vaadin.numerosity.Featureset.AppFunctions;
+
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.router.Route;
+
+@Route("zen")
+public class zen extends VerticalLayout {
+
+    private Div questionDisplay = new Div();
+    private Button[] answerButtons = new Button[4];
+    private Button explanationButton = new Button("Show Explanation");
+    private Div explanationDiv = new Div();
+
+    public zen() {
+        setSizeFull();
+
+        // Header
+        H2 header = new H2("Zen Mode");
+        add(header);
+
+        // Question Display
+        questionDisplay.getStyle().set("border", "1px solid black");
+        questionDisplay.setHeight("200px");
+        add(questionDisplay);
+
+        // Answer Buttons
+        for (int i = 0; i < 4; i++) {
+            answerButtons[i] = new Button("Option " + (i + 1));
+            answerButtons[i].addClickListener(e -> handleAnswer());
+            add(answerButtons[i]);
+        }
+
+        // Explanation Section
+        explanationButton.addClickListener(e -> toggleExplanation());
+        
+	add(explanationButton);
+	explanationDiv.setVisible(false);
+	explanationDiv.setText("Explanation goes here.");
+	add(explanationDiv);
+
+	loadQuestion();
+}
+
+private void loadQuestion() {
+	questionDisplay.setText("Sample Question: What is the square root of 16?");
+}
+
+private void handleAnswer() {
+	Notification.show("Answer recorded. No scoring in Zen mode.");
+}
+
+private void toggleExplanation() {
+	explanationDiv.setVisible(!explanationDiv.isVisible());
+}
 }
  
 ====================== 
@@ -305,6 +530,35 @@ public class Precalculus {
  
 ====================== 
  
+==== File: C:\Git\Numerosity\server\src\main\java\org\vaadin\numerosity\Featureset\Supporter\OptionButton.java ==== 
+ 
+package org.vaadin.numerosity.Featureset.Supporter;
+
+import com.vaadin.flow.component.button.Button;
+
+public class OptionButton extends Button {
+
+    private String data;
+
+    public OptionButton() {
+        super();
+    }
+
+    public OptionButton(String text) {
+        super(text);
+    }
+
+    public String getData() {
+        return data;
+    }
+
+    public void setData(String data) {
+        this.data = data;
+    }
+}
+ 
+====================== 
+ 
 ==== File: C:\Git\Numerosity\server\src\main\java\org\vaadin\numerosity\repository\FsUserRepository.java ==== 
  
 package org.vaadin.numerosity.repository;
@@ -382,6 +636,8 @@ public class FsUserRepository implements UserRepository {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'userExists'");
     }
+
+    
 }
  
 ====================== 
@@ -506,9 +762,6 @@ public class UserRestController {
  
 package org.vaadin.numerosity.service;
 
-import java.util.Map;
-import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.vaadin.numerosity.repository.UserRepository;
@@ -527,6 +780,43 @@ public class UserService {
     }
 
     // Additional methods for user operations
+    // public String loginUser(String email, String password) {
+    //     return loginHandler.login(email, password);
+    // }
+
+    // public boolean logoutUser(String token) {
+    //     return loginHandler.logout(token);
+    // }
+
+}
+ 
+====================== 
+ 
+==== File: C:\Git\Numerosity\server\src\main\java\org\vaadin\numerosity\Subsystems\BackgroundProcess.java ==== 
+ 
+package org.vaadin.numerosity.Subsystems;
+
+// get time per question, time spent on site, and other stats
+public class BackgroundProcess {
+    public void startSiteClock() {
+
+    }
+    public void endSiteClock() {
+
+    }
+    public void getSiteClock() {
+
+    }
+
+    public void startQuestionClock() {
+
+    }
+    public void endQuestionClock() {
+
+    }
+    public void getQuestionClock() {
+
+    }
 }
  
 ====================== 
@@ -608,12 +898,15 @@ public class DatabaseHandler {
         }
     }
 
-    // return the explanation fielf from the question
-    public String getExplanation(String questionId) throws ExecutionException, InterruptedException {
-        DocumentReference docRef = firestore.collection("questions").document(questionId);
-        Map<String, Object> questionData = docRef.get().get().getData();
-        return questionData.get("explanation").toString();
+    public boolean userExists(String userId) {
+        DocumentReference docRef = firestore.collection("users").document(userId);
+        try {
+            return docRef.get().get().exists();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error checking user existence", e);
+        }
     }
+    
 }
  
 ====================== 
@@ -830,28 +1123,30 @@ public class FirestoneClient {
  
 ==== File: C:\Git\Numerosity\server\src\main\java\org\vaadin\numerosity\Subsystems\LocalDatabaseHandler.java ==== 
  
-// LocalDatabaseHandler.java
 package org.vaadin.numerosity.Subsystems;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
 import org.springframework.stereotype.Service;
+import org.vaadin.numerosity.Application;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 @Service
 public class LocalDatabaseHandler {
 
+    private final Application application;
+
     private final Gson gson = new Gson();
-    // private final QuestionLoader questionLoader;
-    // String directory = "Database/Bank/AlgebraOne/Easy";
-    // String questionId = "q1"; //No need for this here
+    private String chosenQuestion;
 
     private final String AlgebraOneEasy = "Database/Bank/AlgebraOne/Easy";
     private final String AlgebraOneMedium = "Database/Bank/AlgebraOne/Medium";
@@ -872,6 +1167,7 @@ public class LocalDatabaseHandler {
     private final String DailyMedium = "Database/Bank/Daily/Medium";
     private final String DailyHard = "Database/Bank/Daily/Hard";
     private final String DailyChallenge = "Database/Bank/Daily/Challenge";
+    private final String testing_directory = "Database/";
 
     private String directory = AlgebraOneEasy; // temporary solution to choose directory. Make this configurable later
 
@@ -881,15 +1177,11 @@ public class LocalDatabaseHandler {
             PrecalculusHard, CalculusEasy, CalculusMedium, CalculusHard, DailyEasy, DailyMedium, DailyHard,
             DailyChallenge };
 
-    private final String[] questions = { "q1", "q2", "q3" }; // Ideally read these from the directory
+    private final String[] questions = { "q1", "q2", "q3" };
 
-    // No longer needs LocalDatabaseHandler
-    // @Autowired //Not needed now
-    // public QuestionLoader(LocalDatabaseHandler localDb) {
-    // this.localDb = localDb;
-    // }
-
-    // These loadAsText and loadAsLatex were moved to a more appropriate class
+    LocalDatabaseHandler(Application application) {
+        this.application = application;
+    } // Ideally read these from the directory
 
     // load random question from the database with the known paths
     public String getRandomDirectory() {
@@ -922,30 +1214,43 @@ public class LocalDatabaseHandler {
     }
 
     public Map<String, Object> loadRandomQuestion() throws Exception {
-        String directory = getRandomDirectory();
-        String questionId = getRandomQuestion();
-        Path path = Paths.get(directory, questionId + ".json");
-
-        if (!Files.exists(path)) {
-            throw new IOException("Question file not found: " + path);
-        }
-
-        String content = new String(Files.readAllBytes(path));
-        return gson.fromJson(content, new TypeToken<Map<String, Object>>() {
-        }.getType());
+        chosenQuestion = getRandomQuestion();
+        return loadSpecificQuestion(chosenQuestion, testing_directory);
     }
 
-    // the directory refers to the level of the question as defined above
-    public Map<String, Object> loadSpecificQuestion(String questionId, String directory) throws Exception {
-        Path path = Paths.get(directory, questionId + ".json");
+    public String getChosenQuestion() {
+        return chosenQuestion;
+    }
 
-        if (!Files.exists(path)) {
-            throw new IOException("Question file not found: " + path);
+    /*
+     * the directory refers to the level of the question as defined above
+     */
+    public Map<String, Object> loadSpecificQuestion(String questionId, String filePath) throws Exception {
+        Path path = Paths.get(testing_directory, "questions.json");
+        String content = new String(Files.readAllBytes(path));
+
+        JsonObject rootJsonObject = gson.fromJson(content, JsonObject.class);
+        JsonArray questionsArray = rootJsonObject.getAsJsonArray("questions");
+
+        for (JsonElement questionElement : questionsArray) {
+            JsonObject questionObject = questionElement.getAsJsonObject();
+            if (questionObject.get("id").getAsString().equals(questionId)) {
+                // Convert the found question to a Map<String, Object>
+                return convertJsonObjectToMap(questionObject);
+            }
         }
 
-        String content = new String(Files.readAllBytes(path));
-        return gson.fromJson(content, new TypeToken<Map<String, Object>>() {
-        }.getType());
+        // If the question is not found, throw an exception
+        throw new Exception("Question with id " + questionId + " not found in the file.");
+    }
+
+    // Helper method to convert JsonObject to Map<String, Object>
+    private Map<String, Object> convertJsonObjectToMap(JsonObject jsonObject) {
+        Map<String, Object> map = new HashMap<>();
+        for (Map.Entry<String, JsonElement> entry : jsonObject.entrySet()) {
+            map.put(entry.getKey(), gson.fromJson(entry.getValue(), Object.class));
+        }
+        return map;
     }
 
     // load random question with specific directory or level
@@ -955,9 +1260,47 @@ public class LocalDatabaseHandler {
         return loadSpecificQuestion(questionId, directory);
     }
 
+    /**
+     * Retrieves the text of a specific answer option for a given question ID.
+     *
+     * @param questionId   The ID of the question.
+     * @param optionNumber The number of the option (1 for the first option, 2 for
+     *                     the second, etc.).
+     * @return The text of the specified answer option, or null if not found.
+     * @throws Exception If there is an error reading the file or parsing the JSON.
+     */
+    public String getAnswerChoiceText(String questionId, String optionId) throws Exception {
+        Path path = Paths.get(testing_directory, "questions.json");
+        String content = new String(Files.readAllBytes(path));
+
+        JsonObject rootJsonObject = gson.fromJson(content, JsonObject.class);
+        JsonArray questionsArray = rootJsonObject.getAsJsonArray("questions");
+
+        for (JsonElement questionElement : questionsArray) {
+            JsonObject questionObject = questionElement.getAsJsonObject();
+            if (questionObject.get("id").getAsString().equals(questionId)) {
+                JsonArray optionsArray = questionObject.getAsJsonArray("options");
+                for (JsonElement optionElement : optionsArray) {
+                    JsonObject optionObject = optionElement.getAsJsonObject();
+                    if (optionObject.get("id").getAsString().equals(optionId)) {
+                        return optionObject.get("text").getAsString();
+                    }
+                }
+                throw new IllegalArgumentException("Invalid option id: " + optionId + " for question " + questionId);
+            }
+        }
+
+        // If the question is not found, throw an exception
+        throw new Exception("Question with id " + questionId + " not found in the file.");
+    }
+
     // set directory form user input
     public void setDirectory(String directory) {
         this.directory = directory;
+    }
+
+    public String getSpecificDirectory() {
+        return testing_directory;
     }
 }
  
@@ -967,8 +1310,47 @@ public class LocalDatabaseHandler {
  
 package org.vaadin.numerosity.Subsystems;
 
+import java.util.concurrent.ExecutionException;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.auth.FirebaseToken;
+import com.google.firebase.auth.UserRecord;
+
+@Service
 public class LoginHandler {
-    
+
+    @Autowired
+    private DatabaseHandler databaseHandler;
+
+    public String login(String email, String password) throws ExecutionException, InterruptedException {
+        try {
+            UserRecord userRecord = FirebaseAuth.getInstance().getUserByEmail(email);
+            String userId = userRecord.getUid();
+
+            // Ensure user exists in Firestore
+            if (!databaseHandler.userExists(userId)) {
+                databaseHandler.createUserDocument(userId, email);
+            }
+
+            return FirebaseAuth.getInstance().createCustomToken(userId);
+        } catch (FirebaseAuthException e) {
+            return "Login failed: " + e.getMessage();
+        }
+    }
+
+    public boolean logout(String idToken) {
+        try {
+            FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(idToken);
+            FirebaseAuth.getInstance().revokeRefreshTokens(decodedToken.getUid());
+            return true;
+        } catch (FirebaseAuthException e) {
+            return false;
+        }
+    }
 }
  
 ====================== 
@@ -979,15 +1361,14 @@ public class LoginHandler {
 //  Create a new class to do this in:
 package org.vaadin.numerosity.Subsystems;
 
-import org.springframework.stereotype.Service;
-
 import java.util.Map;
+
+import org.springframework.stereotype.Service;
 
 @Service
 public class QuestionContentLoader {
 
     private final LocalDatabaseHandler localDbHandler;
-
     public QuestionContentLoader(LocalDatabaseHandler localDbHandler) {
         this.localDbHandler = localDbHandler;
     }
@@ -1006,6 +1387,11 @@ public class QuestionContentLoader {
             throw new IllegalArgumentException("Question has no 'latex' field");
         }
         return question.get("latex").toString();
+    }
+
+    public String getAnswerChoice(String letter) throws Exception {
+        //return localDbHandler.getAnswerChoiceText(localDbHandler.getChosenQuestion(), optionChoice);
+        return localDbHandler.getAnswerChoiceText(localDbHandler.getChosenQuestion(), letter);
     }
 }
  

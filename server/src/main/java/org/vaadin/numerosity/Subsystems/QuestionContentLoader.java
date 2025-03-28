@@ -2,15 +2,14 @@
 //  Create a new class to do this in:
 package org.vaadin.numerosity.Subsystems;
 
-import org.springframework.stereotype.Service;
-
 import java.util.Map;
+
+import org.springframework.stereotype.Service;
 
 @Service
 public class QuestionContentLoader {
 
     private final LocalDatabaseHandler localDbHandler;
-
     public QuestionContentLoader(LocalDatabaseHandler localDbHandler) {
         this.localDbHandler = localDbHandler;
     }
@@ -30,4 +29,14 @@ public class QuestionContentLoader {
         }
         return question.get("latex").toString();
     }
+
+    public String getAnswerChoice(String letter) throws Exception {
+        //return localDbHandler.getAnswerChoiceText(localDbHandler.getChosenQuestion(), optionChoice);
+        return localDbHandler.getAnswerChoiceText(localDbHandler.getChosenQuestion(), letter);
+    }
+
+    // public String getCorrectAnswerKey() {
+    //     return question.get(currentQuestionId).get("correct");
+    // }
+    
 }

@@ -1,25 +1,27 @@
-// LocalDatabaseHandler.java
 package org.vaadin.numerosity.Subsystems;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
 import org.springframework.stereotype.Service;
+import org.vaadin.numerosity.Application;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 @Service
 public class LocalDatabaseHandler {
 
+    private final Application application;
+
     private final Gson gson = new Gson();
-    // private final QuestionLoader questionLoader;
-    // String directory = "Database/Bank/AlgebraOne/Easy";
-    // String questionId = "q1"; //No need for this here
+    private String chosenQuestion;
 
     private final String AlgebraOneEasy = "Database/Bank/AlgebraOne/Easy";
     private final String AlgebraOneMedium = "Database/Bank/AlgebraOne/Medium";
@@ -40,6 +42,7 @@ public class LocalDatabaseHandler {
     private final String DailyMedium = "Database/Bank/Daily/Medium";
     private final String DailyHard = "Database/Bank/Daily/Hard";
     private final String DailyChallenge = "Database/Bank/Daily/Challenge";
+    private final String testing_directory = "Database/";
 
     private String directory = AlgebraOneEasy; // temporary solution to choose directory. Make this configurable later
 
@@ -49,15 +52,11 @@ public class LocalDatabaseHandler {
             PrecalculusHard, CalculusEasy, CalculusMedium, CalculusHard, DailyEasy, DailyMedium, DailyHard,
             DailyChallenge };
 
-    private final String[] questions = { "q1", "q2", "q3" }; // Ideally read these from the directory
+    private final String[] questions = { "q1", "q2", "q3" };
 
-    // No longer needs LocalDatabaseHandler
-    // @Autowired //Not needed now
-    // public QuestionLoader(LocalDatabaseHandler localDb) {
-    // this.localDb = localDb;
-    // }
-
-    // These loadAsText and loadAsLatex were moved to a more appropriate class
+    LocalDatabaseHandler(Application application) {
+        this.application = application;
+    } // Ideally read these from the directory
 
     // load random question from the database with the known paths
     public String getRandomDirectory() {
@@ -90,30 +89,43 @@ public class LocalDatabaseHandler {
     }
 
     public Map<String, Object> loadRandomQuestion() throws Exception {
-        String directory = getRandomDirectory();
-        String questionId = getRandomQuestion();
-        Path path = Paths.get(directory, questionId + ".json");
-
-        if (!Files.exists(path)) {
-            throw new IOException("Question file not found: " + path);
-        }
-
-        String content = new String(Files.readAllBytes(path));
-        return gson.fromJson(content, new TypeToken<Map<String, Object>>() {
-        }.getType());
+        chosenQuestion = getRandomQuestion();
+        return loadSpecificQuestion(chosenQuestion, testing_directory);
     }
 
-    // the directory refers to the level of the question as defined above
-    public Map<String, Object> loadSpecificQuestion(String questionId, String directory) throws Exception {
-        Path path = Paths.get(directory, questionId + ".json");
+    public String getChosenQuestion() {
+        return chosenQuestion;
+    }
 
-        if (!Files.exists(path)) {
-            throw new IOException("Question file not found: " + path);
+    /*
+     * the directory refers to the level of the question as defined above
+     */
+    public Map<String, Object> loadSpecificQuestion(String questionId, String filePath) throws Exception {
+        Path path = Paths.get(testing_directory, "questions.json");
+        String content = new String(Files.readAllBytes(path));
+
+        JsonObject rootJsonObject = gson.fromJson(content, JsonObject.class);
+        JsonArray questionsArray = rootJsonObject.getAsJsonArray("questions");
+
+        for (JsonElement questionElement : questionsArray) {
+            JsonObject questionObject = questionElement.getAsJsonObject();
+            if (questionObject.get("id").getAsString().equals(questionId)) {
+                // Convert the found question to a Map<String, Object>
+                return convertJsonObjectToMap(questionObject);
+            }
         }
 
-        String content = new String(Files.readAllBytes(path));
-        return gson.fromJson(content, new TypeToken<Map<String, Object>>() {
-        }.getType());
+        // If the question is not found, throw an exception
+        throw new Exception("Question with id " + questionId + " not found in the file.");
+    }
+
+    // Helper method to convert JsonObject to Map<String, Object>
+    private Map<String, Object> convertJsonObjectToMap(JsonObject jsonObject) {
+        Map<String, Object> map = new HashMap<>();
+        for (Map.Entry<String, JsonElement> entry : jsonObject.entrySet()) {
+            map.put(entry.getKey(), gson.fromJson(entry.getValue(), Object.class));
+        }
+        return map;
     }
 
     // load random question with specific directory or level
@@ -123,8 +135,46 @@ public class LocalDatabaseHandler {
         return loadSpecificQuestion(questionId, directory);
     }
 
+    /**
+     * Retrieves the text of a specific answer option for a given question ID.
+     *
+     * @param questionId   The ID of the question.
+     * @param optionNumber The number of the option (1 for the first option, 2 for
+     *                     the second, etc.).
+     * @return The text of the specified answer option, or null if not found.
+     * @throws Exception If there is an error reading the file or parsing the JSON.
+     */
+    public String getAnswerChoiceText(String questionId, String optionId) throws Exception {
+        Path path = Paths.get(testing_directory, "questions.json");
+        String content = new String(Files.readAllBytes(path));
+
+        JsonObject rootJsonObject = gson.fromJson(content, JsonObject.class);
+        JsonArray questionsArray = rootJsonObject.getAsJsonArray("questions");
+
+        for (JsonElement questionElement : questionsArray) {
+            JsonObject questionObject = questionElement.getAsJsonObject();
+            if (questionObject.get("id").getAsString().equals(questionId)) {
+                JsonArray optionsArray = questionObject.getAsJsonArray("options");
+                for (JsonElement optionElement : optionsArray) {
+                    JsonObject optionObject = optionElement.getAsJsonObject();
+                    if (optionObject.get("id").getAsString().equals(optionId)) {
+                        return optionObject.get("text").getAsString();
+                    }
+                }
+                throw new IllegalArgumentException("Invalid option id: " + optionId + " for question " + questionId);
+            }
+        }
+
+        // If the question is not found, throw an exception
+        throw new Exception("Question with id " + questionId + " not found in the file.");
+    }
+
     // set directory form user input
     public void setDirectory(String directory) {
         this.directory = directory;
+    }
+
+    public String getSpecificDirectory() {
+        return testing_directory;
     }
 }

@@ -9,14 +9,10 @@ import com.vaadin.flow.theme.Theme;
 
 /**
  * The entry point of the Spring Boot application.
- *
- * Use the @PWA annotation make the application installable on phones, tablets
- * and some desktop browsers.
- *
  */
 @SpringBootApplication
-@PWA(name = "Project Base for Vaadin with Spring", shortName = "Project Base")
-@Theme(variant="Lumo.dark")
+@PWA(name = "Numerosity - Math Practice App", shortName = "Numerosity")
+@Theme(variant = "Lumo.dark")
 public class Application implements AppShellConfigurator {
 
     public static void main(String[] args) {
