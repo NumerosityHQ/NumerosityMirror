@@ -10,12 +10,14 @@ import org.springframework.stereotype.Service;
 public class QuestionContentLoader {
 
     private final LocalDatabaseHandler localDbHandler;
+    private Map<String, Object> chosenQuestionMap;
     public QuestionContentLoader(LocalDatabaseHandler localDbHandler) {
         this.localDbHandler = localDbHandler;
     }
 
     public String loadAsText() throws Exception {
         Map<String, Object> question = localDbHandler.loadRandomQuestion();
+        chosenQuestionMap = question;
         if (!question.containsKey("text")) {
             throw new IllegalArgumentException("Question has no 'text' field");
         }
@@ -36,7 +38,15 @@ public class QuestionContentLoader {
     }
 
     // public String getCorrectAnswerKey() {
-    //     return question.get(currentQuestionId).get("correct");
+    //     return chosenQuestionMap.get(localDbHandler.getChosenQuestion()).get("correct_option_id");
     // }
+    
+    public String getCorrectAnswerKey() throws Exception{
+        // Map<String, String> questionData = chosenQuestionMap.get(localDbHandler.getChosenQuestionMap());
+        if (chosenQuestionMap == null || !chosenQuestionMap.containsKey("correct_option_id")) {
+            throw new IllegalStateException("No 'correct_option_id' answer found for the chosen question.");
+        }
+        return (String) chosenQuestionMap.get("correct_option_id");
+    }
     
 }

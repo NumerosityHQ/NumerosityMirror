@@ -23,6 +23,10 @@ public class LocalDatabaseHandler {
     private final Gson gson = new Gson();
     private String chosenQuestion;
 
+    // Map<String, Object> question = localDbHandler.loadRandomQuestion();
+
+    private Map<String, Object> chosenQuestionMap;
+
     private final String AlgebraOneEasy = "Database/Bank/AlgebraOne/Easy";
     private final String AlgebraOneMedium = "Database/Bank/AlgebraOne/Medium";
     private final String AlgebraOneHard = "Database/Bank/AlgebraOne/Hard";
@@ -93,7 +97,11 @@ public class LocalDatabaseHandler {
         return loadSpecificQuestion(chosenQuestion, testing_directory);
     }
 
-    public String getChosenQuestion() {
+    public Map<String,Object> getChosenQuestionMap() throws Exception {
+        return loadSpecificQuestion(chosenQuestion, testing_directory);
+    }
+
+    public String getChosenQuestion() throws Exception {
         return chosenQuestion;
     }
 

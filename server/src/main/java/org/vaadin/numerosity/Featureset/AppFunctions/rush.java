@@ -73,7 +73,7 @@ public class rush extends VerticalLayout {
             answerChoices.put("d", questionLoader.getAnswerChoice("d"));
 
             //Determine the correct answer key
-          //  correctAnswerKey = questionLoader.getCorrectAnswerKey();
+            correctAnswerKey = questionLoader.getCorrectAnswerKey();
 
             // Set button text
             answerButtons[0].setText(answerChoices.get("a"));
