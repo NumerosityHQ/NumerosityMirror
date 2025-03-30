@@ -18,8 +18,8 @@ public class DatabaseHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(DatabaseHandler.class);
     private final Firestore firestore;
-    private String userId;  // Consider making this method scoped if not needed as class member
-    private String username; // Consider making this method scoped if not needed as class member
+    private String userId; 
+    private String username;
 
     public DatabaseHandler(Firestore firestore) {
         this.firestore = firestore;
@@ -81,5 +81,6 @@ public class DatabaseHandler {
             throw new RuntimeException("Error checking user existence", e);
         }
     }
+    
     
 }

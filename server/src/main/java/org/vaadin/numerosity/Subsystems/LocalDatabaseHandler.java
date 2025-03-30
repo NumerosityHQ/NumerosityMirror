@@ -46,7 +46,7 @@ public class LocalDatabaseHandler {
     private final String DailyMedium = "Database/Bank/Daily/Medium";
     private final String DailyHard = "Database/Bank/Daily/Hard";
     private final String DailyChallenge = "Database/Bank/Daily/Challenge";
-    private final String testing_directory = "Database/";
+    private final String testing_directory = "Database/Bank/";
 
     private String directory = AlgebraOneEasy; // temporary solution to choose directory. Make this configurable later
 

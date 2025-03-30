@@ -17,13 +17,4 @@ public class UserService {
         userRepository.createUserDocument(userId, username);
     }
 
-    // Additional methods for user operations
-    // public String loginUser(String email, String password) {
-    //     return loginHandler.login(email, password);
-    // }
-
-    // public boolean logoutUser(String token) {
-    //     return loginHandler.logout(token);
-    // }
-
 }
