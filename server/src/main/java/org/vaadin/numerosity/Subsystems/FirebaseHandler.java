@@ -1,34 +1,24 @@
 package org.vaadin.numerosity.Subsystems;
 
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.util.Map;
 
-import com.google.auth.oauth2.GoogleCredentials;
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.FirebaseOptions;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.google.cloud.firestore.Firestore;
 
 public class FirebaseHandler {
-    private String databaseUrl;
-    private String pathToKey;
 
-    public FirebaseHandler(String databaseUrl) {
-        this.databaseUrl = databaseUrl;
+    @Autowired
+    private Firestore firestore;
+
+    public void saveResponse(String userId, Map<String, Object> responseLog) {
+        try {
+            firestore.collection("responses").document(userId).set(responseLog);
+            System.out.println("Responses saved successfully!");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
-
-    public void initialize() throws IOException {
-        FileInputStream serviceAccount = new FileInputStream(pathToKey); // Use pathToKey
-        FirebaseOptions options = FirebaseOptions.builder()
-                .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                .setDatabaseUrl(databaseUrl)
-                .build();
-        FirebaseApp.initializeApp(options);
-    }
-
-    public void setPathToKey(String pathToKey) {
-        this.pathToKey = pathToKey;
-    }
-
-    // No longer need to setDatabaseURL
 }
 
 /*

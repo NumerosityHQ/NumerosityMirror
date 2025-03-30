@@ -3,6 +3,8 @@ package org.vaadin.numerosity.Subsystems;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -11,17 +13,10 @@ import org.slf4j.LoggerFactory;
 public class ResponseHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(ResponseHandler.class);
-    private final LocalDatabaseHandler localDbHandler;
-    private final DatabaseHandler dbHandler;
-    private final DataPlotter dataPlotter;
+    private final LocalDatabaseHandler localDbHandler = null;
+    private final DatabaseHandler dbHandler = null;
     private String userId;
     private String questionId;
-
-    public ResponseHandler(LocalDatabaseHandler localDbHandler, DatabaseHandler dbHandler, DataPlotter dataPlotter) {
-        this.localDbHandler = localDbHandler;
-        this.dbHandler = dbHandler;
-        this.dataPlotter = dataPlotter;
-    }
 
     public ResponseResult handleResponse(String questionId, String userAnswer) {
         Instant startTime = Instant.now();
@@ -81,4 +76,31 @@ public class ResponseHandler {
             return timeTakenMillis;
         }
     }
+
+    private Map<String, Object> responseLog = new HashMap<>();
+
+    public void logResponse(String questionId, boolean isCorrect, String subject, String difficulty) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("question_id", questionId);
+        response.put("correct", isCorrect);
+        response.put("subject", subject);
+        response.put("difficulty", difficulty);
+
+        responseLog.put(questionId, response);
+    }
+
+    public Map<String, Object> getResponseLog() {
+        return responseLog;
+    }
+
+    public void updateQuestionJson(Map<String, Object> questionJson, String questionId, String userAnswer, long timeTaken) {
+        for (Map<String, Object> question : (List<Map<String, Object>>) questionJson.get("correct_option_id")) {
+            if (question.get("id").equals(questionId)) {
+                question.put("user_answer", userAnswer);
+                question.put("user_time_taken", timeTaken);
+                break;
+            }
+        }
+    }
+    
 }

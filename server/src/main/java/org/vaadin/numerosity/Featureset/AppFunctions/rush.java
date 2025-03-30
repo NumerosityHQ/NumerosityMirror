@@ -1,5 +1,6 @@
 package org.vaadin.numerosity.Featureset.AppFunctions;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,8 +22,14 @@ public class rush extends VerticalLayout {
     private Div scoreDisplay = new Div();
     private int score = 0;
     private String correctAnswerKey; // Store the key ("a", "b", "c", or "d") of the correct answer
+    private String currentQuestionId;
+    private String currentDifficulty;
+    private String currentSubject;
 
     private final QuestionContentLoader questionLoader;
+
+    // To store question solving info: time, question ID, difficulty, subject
+    private Map<String, Object> rushModeData = new HashMap<>();
 
     @Autowired
     public rush(QuestionContentLoader questionLoader) throws Exception {
@@ -62,18 +69,27 @@ public class rush extends VerticalLayout {
 
     private void loadQuestion() {
         try {
-            String question = questionLoader.loadAsText();
-            questionDisplay.setText(question);
+            // Load the question as a Map
+            Map<String, Object> questionMap = questionLoader.loadAsMap();
+
+            // Extract question details
+            currentQuestionId = (String) questionLoader.getQuestionId(questionMap);
+            String questionText = (String) questionLoader.getQuestionText(questionMap);
+            currentDifficulty = (String) questionLoader.getQuestionDifficulty(questionMap);
+            currentSubject = questionLoader.getQuestionTags(questionMap).toString(); // Adjust if necessary
 
             // Load all answer choices
             Map<String, String> answerChoices = new HashMap<>();
-            answerChoices.put("a", questionLoader.getAnswerChoice("a"));
-            answerChoices.put("b", questionLoader.getAnswerChoice("b"));
-            answerChoices.put("c", questionLoader.getAnswerChoice("c"));
-            answerChoices.put("d", questionLoader.getAnswerChoice("d"));
+            answerChoices.put("a", questionLoader.getAnswerChoice(questionMap, "a"));
+            answerChoices.put("b", questionLoader.getAnswerChoice(questionMap, "b"));
+            answerChoices.put("c", questionLoader.getAnswerChoice(questionMap, "c"));
+            answerChoices.put("d", questionLoader.getAnswerChoice(questionMap, "d"));
 
-            //Determine the correct answer key
-            correctAnswerKey = questionLoader.getCorrectAnswerKey();
+            // Determine the correct answer key
+            correctAnswerKey = questionLoader.getCorrectAnswerKey(questionMap);
+
+            // Set question text
+            questionDisplay.setText(questionText);
 
             // Set button text
             answerButtons[0].setText(answerChoices.get("a"));
@@ -88,7 +104,7 @@ public class rush extends VerticalLayout {
     }
 
     private void handleAnswer(int index) {
-         // Determine which button was pressed to answer
+        // Determine which button was pressed to answer
         String selectedAnswerKey = null;
         switch (index) {
             case 0:
@@ -104,21 +120,26 @@ public class rush extends VerticalLayout {
                 selectedAnswerKey = "d";
                 break;
         }
+
+        // Validate answer
         boolean isCorrect = selectedAnswerKey != null && selectedAnswerKey.equals(correctAnswerKey);
+
+        // Store question solving information
+        long currentTime = Instant.now().toEpochMilli(); // Use milliseconds for better precision
+        rushModeData.put("questionSolvedAtTime", currentTime);
+        rushModeData.put("questionId", currentQuestionId);
+        rushModeData.put("questionDifficulty", currentDifficulty);
+        rushModeData.put("questionSubject", currentSubject);
 
         if (isCorrect) {
             score++;
             scoreDisplay.setText("Score: " + score);
-            loadQuestion();
+            Notification.show("Correct!");
         } else {
-            Notification.show("Game Over! Final Score: " + score);
-            resetGame();
+            Notification.show("Incorrect!");
         }
-    }
 
-    private void resetGame() {
-        score = 0;
-        scoreDisplay.setText("Score: 0");
-        loadQuestion(); //Load a new question after game over
+        // Load the next question
+        loadQuestion();
     }
 }

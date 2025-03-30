@@ -66,26 +66,164 @@ public class ButtonInteraction implements Serializable {
  
 package org.vaadin.numerosity;
 
-import org.vaadin.numerosity.Featureset.AppFunctions.bank;
-import org.vaadin.numerosity.Featureset.AppFunctions.rush;
-import org.vaadin.numerosity.Featureset.AppFunctions.zen;
-
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.PasswordField;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.router.BeforeEvent;
+import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.OptionalParameter;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.vaadin.numerosity.Featureset.AppFunctions.bank;
+import org.vaadin.numerosity.Featureset.AppFunctions.rush;
+import org.vaadin.numerosity.Featureset.AppFunctions.zen;
+import org.vaadin.numerosity.Subsystems.DataPlotter;
+import org.vaadin.numerosity.Subsystems.DatabaseHandler;
+import org.vaadin.numerosity.Subsystems.FirebaseHandler;
+import org.vaadin.numerosity.Subsystems.LocalDatabaseHandler;
+import org.vaadin.numerosity.Subsystems.QuestionContentLoader;
+import org.vaadin.numerosity.Subsystems.ResponseHandler;
+import org.vaadin.numerosity.entity.User;
+import org.vaadin.numerosity.repository.UserRepository;
 
-public class MainView extends VerticalLayout {
+import java.util.List;
+import java.util.Map;
 
-    public MainView() {
+@Route("main")
+public class MainView extends VerticalLayout implements HasUrlParameter<String> {
+
+    private String userId;
+    private Div contentArea = new Div();
+    private H2 welcomeMessage = new H2();
+    private final FirebaseHandler firebaseService;
+    private final QuestionContentLoader questionLoader;
+    private final LocalDatabaseHandler localDbHandler;
+    private final DatabaseHandler DbHandler;
+    private final DataPlotter dataPlotter;
+    private Map<String, Object> questionJson;
+    private ResponseHandler responseTracker;
+
+    // Login/Registration Components
+    private TextField usernameField = new TextField("Username");
+    private PasswordField passwordField = new PasswordField("Password");
+    private Button loginButton = new Button("Login");
+    private Button registerButton = new Button("Register");
+    @Autowired
+    private UserRepository userRepository;
+
+
+    @Autowired
+    public MainView(FirebaseHandler firebaseService, QuestionContentLoader questionLoader, UserRepository userRepository) {
+        this.firebaseService = firebaseService;
+        this.questionLoader = questionLoader;
+        this.localDbHandler = null;
+        this.DbHandler = null;
+        this.dataPlotter = new DataPlotter();
+        this.userRepository = userRepository; // Inject UserRepository
+
         // Header
         H1 header = new H1("Numerosity");
         header.getStyle().set("text-align", "center");
         add(header);
 
-        // Navigation Links
+        // Initialize Login/Registration form
+        VerticalLayout loginForm = createLoginForm();
+        add(loginForm);
+
+        // Navigation Links - initially hidden
+        Div navigationBar = createNavigationBar();
+        navigationBar.setVisible(false);
+
+        contentArea.getStyle().set("margin-left", "220px");
+        contentArea.getStyle().set("padding", "20px");
+        contentArea.add(welcomeMessage);
+        contentArea.setVisible(false);
+
+        HorizontalLayout layout = new HorizontalLayout(navigationBar, contentArea);
+        layout.setSizeFull();
+
+        add(layout);
+    }
+
+    private VerticalLayout createLoginForm() {
+        VerticalLayout loginForm = new VerticalLayout();
+
+        loginButton.addClickListener(e -> {
+            String username = usernameField.getValue();
+            String password = passwordField.getValue();
+
+            User user = userRepository.findByUsername(username);
+
+            if (user != null && user.getPassword().equals(password)) {
+                // Authentication successful
+                this.userId = username;
+                welcomeMessage.setText("Welcome to Numerosity, " + userId + "!");
+                loadQuestionsAndInitialize();
+                //Show main view
+                showMainView();
+            } else {
+                Notification.show("Invalid username or password.");
+            }
+        });
+
+        registerButton.addClickListener(e -> {
+            String username = usernameField.getValue();
+            String password = passwordField.getValue();
+
+            if (username == null || username.isEmpty() || password == null || password.isEmpty()) {
+                Notification.show("Username and password cannot be empty.");
+                return;
+            }
+            if (userRepository.findByUsername(username) != null) {
+                Notification.show("Username already exists.");
+                return;
+            }
+
+            User newUser = new User(username, password);
+            userRepository.save(newUser);
+            Notification.show("Registration successful. Please log in.");
+        });
+
+        loginForm.add(usernameField, passwordField, loginButton, registerButton);
+        return loginForm;
+    }
+
+    private void showMainView() {
+        // Find the navigation bar and content area in the MainView
+        HorizontalLayout layout = (HorizontalLayout) this.getChildren()
+                .filter(component -> component instanceof HorizontalLayout)
+                .findFirst()
+                .orElse(null);
+
+        if (layout != null) {
+            Div navigationBar = (Div) layout.getChildren()
+                    .filter(component -> component instanceof Div)
+                    .findFirst()
+                    .orElse(null);
+
+            // Set visibility of the navigation bar
+            if (navigationBar != null) {
+                navigationBar.setVisible(true);
+            }
+
+            // Set visibility of the content area
+            contentArea.setVisible(true);
+
+            // Hide the login form
+            getChildren().filter(component -> component instanceof VerticalLayout)
+                    .findFirst()
+                    .ifPresent(component -> component.setVisible(false));
+        }
+    }
+
+    private Div createNavigationBar() {
         Div navigationBar = new Div();
         navigationBar.getStyle().set("width", "200px");
         navigationBar.getStyle().set("border-right", "1px solid black");
@@ -97,20 +235,70 @@ public class MainView extends VerticalLayout {
         RouterLink dailyLink = new RouterLink("Daily", zen.class);
 
         navigationBar.add(practiceLink, rushLink, dailyLink);
+        return navigationBar;
+    }
 
-        // Main Content Area
-        Div contentArea = new Div();
-        contentArea.getStyle().set("margin-left", "220px");
-        contentArea.getStyle().set("padding", "20px");
+    @Override
+    public void setParameter(BeforeEvent event, @OptionalParameter String parameter) {
+        this.userId = parameter;
+        if (userId != null && !userId.isEmpty()) {
+            welcomeMessage.setText("Welcome to Numerosity, " + userId + "!");
+            loadQuestionsAndInitialize();
+        } else {
+            welcomeMessage.setText("Please log in.");
+        }
+    }
 
-        H2 welcomeMessage = new H2("Welcome to Numerosity!");
-        welcomeMessage.getStyle().set("text-align", "center");
-        contentArea.add(welcomeMessage);
+    private void loadQuestionsAndInitialize() {
+        try {
+            // Load questions
+            questionJson = questionLoader.loadAsMap();
+            // Now you can use questionJson to display questions, etc.
+            displayQuestion(); // You'll need to implement this method
+        } catch (Exception e) {
+            Notification.show("Failed to load questions: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 
-        HorizontalLayout layout = new HorizontalLayout(navigationBar, contentArea);
-        layout.setSizeFull();
+    private void displayQuestion() {
+        // Example: Display the first question
+        List<Map<String, Object>> questions = (List<Map<String, Object>>) questionJson.get("questions");
+        if (questions != null && !questions.isEmpty()) {
+            Map<String, Object> firstQuestion = questions.get(0);
+            contentArea.add(new H2((String) firstQuestion.get("text")));
 
-        add(layout);
+            // Example button
+            Button answerButton = new Button("Answer", e -> {
+                // Example: Log response and save to Firebase
+                boolean isCorrect = true; // Determine if the answer is correct
+                String questionId = (String) firstQuestion.get("id");
+                String subject = firstQuestion.get("tags").toString(); // Modify if your tags are structured differently
+                String difficulty = (String) firstQuestion.get("difficulty");
+
+                responseTracker.logResponse(questionId, isCorrect, subject, difficulty);
+                firebaseService.saveResponse(userId, responseTracker.getResponseLog());
+
+                updateQuestionJson(questionJson, questionId, "userAnswer", 10);
+                Notification.show("Answered and saved!");
+                displayQuestion();
+
+            });
+            contentArea.add(answerButton);
+        } else {
+            contentArea.add(new H2("No questions available."));
+        }
+    }
+
+    public void updateQuestionJson(Map<String, Object> questionJson, String questionId, String userAnswer, long timeTaken) {
+        List<Map<String, Object>> questions = (List<Map<String, Object>>) questionJson.get("questions");
+        for (Map<String, Object> question : questions) {
+            if (question.get("id").equals(questionId)) {
+                question.put("user_answer", userAnswer);
+                question.put("user_time_taken", timeTaken);
+                break;
+            }
+        }
     }
 }
  
@@ -134,7 +322,6 @@ import org.vaadin.numerosity.repository.UserRepository;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.FirestoreOptions;
-
 
 @Configuration
 @EnableWebMvc
@@ -170,6 +357,66 @@ public class ApplicationConfig {
 
     
 
+}
+ 
+====================== 
+ 
+==== File: C:\Git\Numerosity\server\src\main\java\org\vaadin\numerosity\entity\User.java ==== 
+ 
+package org.vaadin.numerosity.entity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "users")
+public class User {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, unique = true)
+    private String username;
+
+    @Column(nullable = false)
+    private String password;
+
+    public User() {
+    }
+
+    public User(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 }
  
 ====================== 
@@ -243,6 +490,7 @@ public class bank extends VerticalLayout {
  
 package org.vaadin.numerosity.Featureset.AppFunctions;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -264,8 +512,14 @@ public class rush extends VerticalLayout {
     private Div scoreDisplay = new Div();
     private int score = 0;
     private String correctAnswerKey; // Store the key ("a", "b", "c", or "d") of the correct answer
+    private String currentQuestionId;
+    private String currentDifficulty;
+    private String currentSubject;
 
     private final QuestionContentLoader questionLoader;
+
+    // To store question solving info: time, question ID, difficulty, subject
+    private Map<String, Object> rushModeData = new HashMap<>();
 
     @Autowired
     public rush(QuestionContentLoader questionLoader) throws Exception {
@@ -305,18 +559,27 @@ public class rush extends VerticalLayout {
 
     private void loadQuestion() {
         try {
-            String question = questionLoader.loadAsText();
-            questionDisplay.setText(question);
+            // Load the question as a Map
+            Map<String, Object> questionMap = questionLoader.loadAsMap();
+
+            // Extract question details
+            currentQuestionId = (String) questionLoader.getQuestionId(questionMap);
+            String questionText = (String) questionLoader.getQuestionText(questionMap);
+            currentDifficulty = (String) questionLoader.getQuestionDifficulty(questionMap);
+            currentSubject = questionLoader.getQuestionTags(questionMap).toString(); // Adjust if necessary
 
             // Load all answer choices
             Map<String, String> answerChoices = new HashMap<>();
-            answerChoices.put("a", questionLoader.getAnswerChoice("a"));
-            answerChoices.put("b", questionLoader.getAnswerChoice("b"));
-            answerChoices.put("c", questionLoader.getAnswerChoice("c"));
-            answerChoices.put("d", questionLoader.getAnswerChoice("d"));
+            answerChoices.put("a", questionLoader.getAnswerChoice(questionMap, "a"));
+            answerChoices.put("b", questionLoader.getAnswerChoice(questionMap, "b"));
+            answerChoices.put("c", questionLoader.getAnswerChoice(questionMap, "c"));
+            answerChoices.put("d", questionLoader.getAnswerChoice(questionMap, "d"));
 
-            //Determine the correct answer key
-            correctAnswerKey = questionLoader.getCorrectAnswerKey();
+            // Determine the correct answer key
+            correctAnswerKey = questionLoader.getCorrectAnswerKey(questionMap);
+
+            // Set question text
+            questionDisplay.setText(questionText);
 
             // Set button text
             answerButtons[0].setText(answerChoices.get("a"));
@@ -331,7 +594,7 @@ public class rush extends VerticalLayout {
     }
 
     private void handleAnswer(int index) {
-         // Determine which button was pressed to answer
+        // Determine which button was pressed to answer
         String selectedAnswerKey = null;
         switch (index) {
             case 0:
@@ -347,22 +610,27 @@ public class rush extends VerticalLayout {
                 selectedAnswerKey = "d";
                 break;
         }
+
+        // Validate answer
         boolean isCorrect = selectedAnswerKey != null && selectedAnswerKey.equals(correctAnswerKey);
+
+        // Store question solving information
+        long currentTime = Instant.now().toEpochMilli(); // Use milliseconds for better precision
+        rushModeData.put("questionSolvedAtTime", currentTime);
+        rushModeData.put("questionId", currentQuestionId);
+        rushModeData.put("questionDifficulty", currentDifficulty);
+        rushModeData.put("questionSubject", currentSubject);
 
         if (isCorrect) {
             score++;
             scoreDisplay.setText("Score: " + score);
-            loadQuestion();
+            Notification.show("Correct!");
         } else {
-            Notification.show("Game Over! Final Score: " + score);
-            resetGame();
+            Notification.show("Incorrect!");
         }
-    }
 
-    private void resetGame() {
-        score = 0;
-        scoreDisplay.setText("Score: 0");
-        loadQuestion(); //Load a new question after game over
+        // Load the next question
+        loadQuestion();
     }
 }
  
@@ -662,8 +930,10 @@ public class FsUserRepository implements UserRepository {
  
 package org.vaadin.numerosity.repository;
 
-import java.util.Optional;
 import java.util.Map;
+import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.vaadin.numerosity.entity.User;
 
 public interface UserRepository {
 
@@ -678,7 +948,18 @@ public interface UserRepository {
 
     boolean userExists(String userId);
 }
- 
+
+/*
+ * package org.vaadin.numerosity.repository;
+ * 
+ * import org.springframework.data.jpa.repository.JpaRepository;
+ * import org.vaadin.numerosity.entity.User;
+ * 
+ * public interface UserRepository extends JpaRepository<User, Long> {
+ * User findByUsername(String username);
+ * }
+ * 
+ */ 
 ====================== 
  
 ==== File: C:\Git\Numerosity\server\src\main\java\org\vaadin\numerosity\repository\exception\DbException.java ==== 
@@ -1028,35 +1309,25 @@ public class DataPlotter {
  
 package org.vaadin.numerosity.Subsystems;
 
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.util.Map;
 
-import com.google.auth.oauth2.GoogleCredentials;
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.FirebaseOptions;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.google.cloud.firestore.Firestore;
 
 public class FirebaseHandler {
-    private String databaseUrl;
-    private String pathToKey;
 
-    public FirebaseHandler(String databaseUrl) {
-        this.databaseUrl = databaseUrl;
+    @Autowired
+    private Firestore firestore;
+
+    public void saveResponse(String userId, Map<String, Object> responseLog) {
+        try {
+            firestore.collection("responses").document(userId).set(responseLog);
+            System.out.println("Responses saved successfully!");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
-
-    public void initialize() throws IOException {
-        FileInputStream serviceAccount = new FileInputStream(pathToKey); // Use pathToKey
-        FirebaseOptions options = FirebaseOptions.builder()
-                .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                .setDatabaseUrl(databaseUrl)
-                .build();
-        FirebaseApp.initializeApp(options);
-    }
-
-    public void setPathToKey(String pathToKey) {
-        this.pathToKey = pathToKey;
-    }
-
-    // No longer need to setDatabaseURL
 }
 
 /*
@@ -1238,7 +1509,11 @@ public class LocalDatabaseHandler {
         return loadSpecificQuestion(chosenQuestion, testing_directory);
     }
 
-    public String getChosenQuestion() {
+    public Map<String,Object> getChosenQuestionMap() throws Exception {
+        return loadSpecificQuestion(chosenQuestion, testing_directory);
+    }
+
+    public String getChosenQuestion() throws Exception {
         return chosenQuestion;
     }
 
@@ -1326,100 +1601,174 @@ public class LocalDatabaseHandler {
  
 ====================== 
  
-==== File: C:\Git\Numerosity\server\src\main\java\org\vaadin\numerosity\Subsystems\LoginHandler.java ==== 
- 
-package org.vaadin.numerosity.Subsystems;
-
-import java.util.concurrent.ExecutionException;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthException;
-import com.google.firebase.auth.FirebaseToken;
-import com.google.firebase.auth.UserRecord;
-
-@Service
-public class LoginHandler {
-
-    @Autowired
-    private DatabaseHandler databaseHandler;
-
-    public String login(String email, String password) throws ExecutionException, InterruptedException {
-        try {
-            UserRecord userRecord = FirebaseAuth.getInstance().getUserByEmail(email);
-            String userId = userRecord.getUid();
-
-            // Ensure user exists in Firestore
-            if (!databaseHandler.userExists(userId)) {
-                databaseHandler.createUserDocument(userId, email);
-            }
-
-            return FirebaseAuth.getInstance().createCustomToken(userId);
-        } catch (FirebaseAuthException e) {
-            return "Login failed: " + e.getMessage();
-        }
-    }
-
-    public boolean logout(String idToken) {
-        try {
-            FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(idToken);
-            FirebaseAuth.getInstance().revokeRefreshTokens(decodedToken.getUid());
-            return true;
-        } catch (FirebaseAuthException e) {
-            return false;
-        }
-    }
-}
- 
-====================== 
- 
 ==== File: C:\Git\Numerosity\server\src\main\java\org\vaadin\numerosity\Subsystems\QuestionContentLoader.java ==== 
  
-//  A class is needed to appropriately load text or latex content from questions
-//  Create a new class to do this in:
 package org.vaadin.numerosity.Subsystems;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 @Service
 public class QuestionContentLoader {
 
-    private final LocalDatabaseHandler localDbHandler;
-    private Map<String, Object> chosenQuestionMap;
-    public QuestionContentLoader(LocalDatabaseHandler localDbHandler) {
-        this.localDbHandler = localDbHandler;
-    }
+    private final String questionsFile = "questions.json"; // Path to your JSON file
+    private JsonNode rootNode; // Store the root JSON node
 
-    public String loadAsText() throws Exception {
-        Map<String, Object> question = localDbHandler.loadRandomQuestion();
-        chosenQuestionMap = question;
-        if (!question.containsKey("text")) {
-            throw new IllegalArgumentException("Question has no 'text' field");
+    public QuestionContentLoader() {
+        try {
+            // Load the JSON data when the service is created
+            InputStream inputStream = getClass().getClassLoader().getResourceAsStream(questionsFile);
+            if (inputStream == null) {
+                throw new IOException("Could not find file: " + questionsFile);
+            }
+            ObjectMapper mapper = new ObjectMapper();
+            rootNode = mapper.readTree(inputStream);
+        } catch (IOException e) {
+            // Handle exception (e.g., log it, throw a runtime exception)
+            System.err.println("Error loading questions from JSON: " + e.getMessage());
+            rootNode = null; // Ensure rootNode is null to prevent further errors
         }
-        return question.get("text").toString();
     }
 
-    public String loadAsLatex() throws Exception {
-        Map<String, Object> question = localDbHandler.loadRandomQuestion();
-        if (!question.containsKey("latex")) {
-            throw new IllegalArgumentException("Question has no 'latex' field");
+    public Map<String, Object> loadAsMap() throws IOException {
+        if (rootNode == null) {
+            throw new IOException("Questions not loaded.");
         }
-        return question.get("latex").toString();
+
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.convertValue(rootNode, Map.class);
     }
 
-    public String getAnswerChoice(String letter) throws Exception {
-        //return localDbHandler.getAnswerChoiceText(localDbHandler.getChosenQuestion(), optionChoice);
-        return localDbHandler.getAnswerChoiceText(localDbHandler.getChosenQuestion(), letter);
+    public String loadAsText() throws IOException {
+        if (rootNode == null) {
+            throw new IOException("Questions not loaded.");
+        }
+
+        // Get the first question text from the JSON
+        JsonNode questionsNode = rootNode.get("questions");
+        if (questionsNode != null && questionsNode.isArray() && questionsNode.size() > 0) {
+            JsonNode firstQuestion = questionsNode.get(0);
+            JsonNode textNode = firstQuestion.get("text");
+            if (textNode != null) {
+                return textNode.asText();
+            }
+        }
+
+        return "No questions available.";
     }
 
-    public String getCorrectAnswerKey() {
-        return chosenQuestionMap.get(localDbHandler.getChosenQuestion()).get("correct");
+    public String getAnswerChoice(Map<String, Object> questionMap, String choiceId) {
+        List<Map<String, Object>> questions = (List<Map<String, Object>>) questionMap.get("questions");
+        if (questions != null && !questions.isEmpty()) {
+            Map<String, Object> firstQuestion = questions.get(0);
+            List<Map<String, Object>> options = (List<Map<String, Object>>) firstQuestion.get("options");
+            if (options != null) {
+                for (Map<String, Object> option : options) {
+                    if (option.get("id").equals(choiceId)) {
+                        return (String) option.get("text");
+                    }
+                }
+            }
+        }
+        return null; // Or a default value if needed
     }
-    
+
+   public String getCorrectAnswerKey(Map<String, Object> questionMap) {
+        List<Map<String, Object>> questions = (List<Map<String, Object>>) questionMap.get("questions");
+        if (questions != null && !questions.isEmpty()) {
+            Map<String, Object> firstQuestion = questions.get(0);
+            return (String) firstQuestion.get("correct_option_id");
+        }
+        return null; // Or a default value if needed
+    }
+
+    //Get question ID
+    public String getQuestionId(Map<String, Object> questionMap) {
+        List<Map<String, Object>> questions = (List<Map<String, Object>>) questionMap.get("questions");
+        if (questions != null && !questions.isEmpty()) {
+            Map<String, Object> firstQuestion = questions.get(0);
+            return (String) firstQuestion.get("id");
+        }
+        return null; // Or a default value if needed
+    }
+
+    //Get question Text
+    public String getQuestionText(Map<String, Object> questionMap) {
+        List<Map<String, Object>> questions = (List<Map<String, Object>>) questionMap.get("questions");
+        if (questions != null && !questions.isEmpty()) {
+            Map<String, Object> firstQuestion = questions.get(0);
+            return (String) firstQuestion.get("text");
+        }
+        return null; // Or a default value if needed
+    }
+
+    //Get question difficulty
+     public String getQuestionDifficulty(Map<String, Object> questionMap) {
+        List<Map<String, Object>> questions = (List<Map<String, Object>>) questionMap.get("questions");
+        if (questions != null && !questions.isEmpty()) {
+            Map<String, Object> firstQuestion = questions.get(0);
+            return (String) firstQuestion.get("difficulty");
+        }
+        return null; // Or a default value if needed
+    }
+
+    //Get question Tags
+    public List<String> getQuestionTags(Map<String, Object> questionMap) {
+        List<Map<String, Object>> questions = (List<Map<String, Object>>) questionMap.get("questions");
+        if (questions != null && !questions.isEmpty()) {
+            Map<String, Object> firstQuestion = questions.get(0);
+            return (List<String>) firstQuestion.get("tags");
+        }
+        return null; // Or a default value if needed
+    }
+
+    public String getAnswerChoice(String choiceId) throws IOException {
+         if (rootNode == null) {
+            throw new IOException("Questions not loaded.");
+        }
+
+        // Get the first question text from the JSON
+        JsonNode questionsNode = rootNode.get("questions");
+        if (questionsNode != null && questionsNode.isArray() && questionsNode.size() > 0) {
+            JsonNode firstQuestion = questionsNode.get(0);
+            JsonNode optionsNode = firstQuestion.get("options");
+
+            if (optionsNode != null && optionsNode.isArray()) {
+                for (JsonNode option : optionsNode) {
+                    if (choiceId.equals(option.get("id").asText())) {
+                        return option.get("text").asText();
+                    }
+                }
+            }
+        }
+
+        return "Answer not available.";
+    }
+
+    public String getCorrectAnswerKey() throws IOException {
+        if (rootNode == null) {
+            throw new IOException("Questions not loaded.");
+        }
+
+        // Get the first question text from the JSON
+        JsonNode questionsNode = rootNode.get("questions");
+        if (questionsNode != null && questionsNode.isArray() && questionsNode.size() > 0) {
+            JsonNode firstQuestion = questionsNode.get(0);
+            JsonNode correctAnswerNode = firstQuestion.get("correct_option_id");
+            if (correctAnswerNode != null) {
+                return correctAnswerNode.asText();
+            }
+        }
+
+        return "Correct answer not available.";
+    }
 }
  
 ====================== 
@@ -1431,6 +1780,8 @@ package org.vaadin.numerosity.Subsystems;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -1439,17 +1790,10 @@ import org.slf4j.LoggerFactory;
 public class ResponseHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(ResponseHandler.class);
-    private final LocalDatabaseHandler localDbHandler;
-    private final DatabaseHandler dbHandler;
-    private final DataPlotter dataPlotter;
+    private final LocalDatabaseHandler localDbHandler = null;
+    private final DatabaseHandler dbHandler = null;
     private String userId;
     private String questionId;
-
-    public ResponseHandler(LocalDatabaseHandler localDbHandler, DatabaseHandler dbHandler, DataPlotter dataPlotter) {
-        this.localDbHandler = localDbHandler;
-        this.dbHandler = dbHandler;
-        this.dataPlotter = dataPlotter;
-    }
 
     public ResponseResult handleResponse(String questionId, String userAnswer) {
         Instant startTime = Instant.now();
@@ -1509,6 +1853,33 @@ public class ResponseHandler {
             return timeTakenMillis;
         }
     }
+
+    private Map<String, Object> responseLog = new HashMap<>();
+
+    public void logResponse(String questionId, boolean isCorrect, String subject, String difficulty) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("question_id", questionId);
+        response.put("correct", isCorrect);
+        response.put("subject", subject);
+        response.put("difficulty", difficulty);
+
+        responseLog.put(questionId, response);
+    }
+
+    public Map<String, Object> getResponseLog() {
+        return responseLog;
+    }
+
+    public void updateQuestionJson(Map<String, Object> questionJson, String questionId, String userAnswer, long timeTaken) {
+        for (Map<String, Object> question : (List<Map<String, Object>>) questionJson.get("correct_option_id")) {
+            if (question.get("id").equals(questionId)) {
+                question.put("user_answer", userAnswer);
+                question.put("user_time_taken", timeTaken);
+                break;
+            }
+        }
+    }
+    
 }
  
 ====================== 

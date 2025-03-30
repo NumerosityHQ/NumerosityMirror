@@ -1,6 +1,5 @@
 package org.vaadin.numerosity.config;
 
-
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -9,12 +8,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.vaadin.numerosity.repository.FsUserRepository;
-import org.vaadin.numerosity.repository.UserRepository;
 
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.FirestoreOptions;
-
 
 @Configuration
 @EnableWebMvc
@@ -26,28 +23,23 @@ public class ApplicationConfig {
     @Value("${firebase.credentials.path}")
     private String credentialsPath;
 
-
     @Bean
     public Firestore getFirestore() {
         try {
-
-        InputStream inStream = this.getClass().getClassLoader().getResourceAsStream(credentialsPath);    
-        GoogleCredentials credentials = GoogleCredentials.fromStream(inStream);
-        FirestoreOptions firestoreOptions = FirestoreOptions.getDefaultInstance().toBuilder()
-                .setProjectId(projectId)
-                .setCredentials(credentials)
-                .build();
-        return firestoreOptions.getService();
+            InputStream inStream = this.getClass().getClassLoader().getResourceAsStream(credentialsPath);
+            GoogleCredentials credentials = GoogleCredentials.fromStream(inStream);
+            FirestoreOptions firestoreOptions = FirestoreOptions.getDefaultInstance().toBuilder()
+                    .setProjectId(projectId)
+                    .setCredentials(credentials)
+                    .build();
+            return firestoreOptions.getService();
         } catch (IOException e) {
             throw new RuntimeException("Exception while initializing Firestore", e);
         }
     }
 
     @Bean
-    public UserRepository userRepository(Firestore firestore) {
+    public FsUserRepository fsUserRepository(Firestore firestore) {
         return new FsUserRepository(firestore);
     }
-
-    
-
 }
