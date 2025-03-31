@@ -56,7 +56,13 @@ public class LocalDatabaseHandler {
             PrecalculusHard, CalculusEasy, CalculusMedium, CalculusHard, DailyEasy, DailyMedium, DailyHard,
             DailyChallenge };
 
-    private final String[] questions = { "q1", "q2", "q3" };
+            private final String[] questions = { 
+                "q1", "q2", "q3", "q4", "q5", 
+                "q6", "q7", "q8", "q9", "q10", 
+                "q11", "q12", "q13", "q14", "q15", 
+                "q16", "q17", "q18", "q19", "q20" 
+            };
+            
     Path databasePath = Paths.get(testing_directory, "questions.json");
 
     LocalDatabaseHandler(Application application) {
