@@ -57,6 +57,7 @@ public class LocalDatabaseHandler {
             DailyChallenge };
 
     private final String[] questions = { "q1", "q2", "q3" };
+    Path databasePath = Paths.get(testing_directory, "questions.json");
 
     LocalDatabaseHandler(Application application) {
         this.application = application;
@@ -97,7 +98,7 @@ public class LocalDatabaseHandler {
         return loadSpecificQuestion(chosenQuestion, testing_directory);
     }
 
-    public Map<String,Object> getChosenQuestionMap() throws Exception {
+    public Map<String, Object> getChosenQuestionMap() throws Exception {
         return loadSpecificQuestion(chosenQuestion, testing_directory);
     }
 
@@ -184,5 +185,98 @@ public class LocalDatabaseHandler {
 
     public String getSpecificDirectory() {
         return testing_directory;
+    }
+
+    public void markQuestionAsAttempted(String questionId) {
+        try {
+            // Load the JSON file
+            Path path = Paths.get(testing_directory, "questions.json");
+            String content = new String(Files.readAllBytes(path));
+
+            // Parse the JSON content
+            JsonObject rootJsonObject = gson.fromJson(content, JsonObject.class);
+            JsonArray questionsArray = rootJsonObject.getAsJsonArray("questions");
+
+            // Iterate through the questions to find the one with the matching ID
+            for (JsonElement questionElement : questionsArray) {
+                JsonObject questionObject = questionElement.getAsJsonObject();
+                if (questionObject.get("id").getAsString().equals(questionId)) {
+                    // Mark the question as attempted
+                    questionObject.addProperty("attempted", true);
+
+                    // Save the updated JSON back to the file
+                    Files.write(path, gson.toJson(rootJsonObject).getBytes());
+                    System.out.println("Question with id " + questionId + " marked as attempted.");
+                    return;
+                }
+            }
+
+            // If the question is not found, print a message or throw an exception
+            System.out.println("Question with id " + questionId + " not found in the file.");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void markQuestionAsUnattempted(String questionId) {
+        try {
+            // Load the JSON file
+            Path path = Paths.get(testing_directory, "questions.json");
+            String content = new String(Files.readAllBytes(path));
+
+            // Parse the JSON content
+            JsonObject rootJsonObject = gson.fromJson(content, JsonObject.class);
+            JsonArray questionsArray = rootJsonObject.getAsJsonArray("questions");
+
+            // Iterate through the questions to find the one with the matching ID
+            for (JsonElement questionElement : questionsArray) {
+                JsonObject questionObject = questionElement.getAsJsonObject();
+                if (questionObject.get("id").getAsString().equals(questionId)) {
+                    // Mark the question as unattempted
+                    questionObject.addProperty("attempted", false);
+
+                    // Save the updated JSON back to the file
+                    Files.write(path, gson.toJson(rootJsonObject).getBytes());
+                    System.out.println("Question with id " + questionId + " marked as unattempted.");
+                    return;
+                }
+            }
+
+            // If the question is not found, print a message or throw an exception
+            System.out.println("Question with id " + questionId + " not found in the file.");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void markQuestionAsCorrect(String questionId) {
+        try {
+            // Load the JSON file
+            Path path = Paths.get(testing_directory, "questions.json");
+            String content = new String(Files.readAllBytes(path));
+
+            // Parse the JSON content
+            JsonObject rootJsonObject = gson.fromJson(content, JsonObject.class);
+            JsonArray questionsArray = rootJsonObject.getAsJsonArray("questions");
+
+            // Iterate through the questions to find the one with the matching ID
+            for (JsonElement questionElement : questionsArray) {
+                JsonObject questionObject = questionElement.getAsJsonObject();
+                if (questionObject.get("id").getAsString().equals(questionId)) {
+                    // Mark the question as correct
+                    questionObject.addProperty("correct", true);
+
+                    // Save the updated JSON back to the file
+                    Files.write(path, gson.toJson(rootJsonObject).getBytes());
+                    System.out.println("Question with id " + questionId + " marked as correct.");
+                    return;
+                }
+            }
+
+            // If the question is not found, print a message or throw an exception
+            System.out.println("Question with id " + questionId + " not found in the file.");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

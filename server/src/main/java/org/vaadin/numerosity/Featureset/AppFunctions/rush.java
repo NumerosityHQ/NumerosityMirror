@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.vaadin.numerosity.Subsystems.LocalDatabaseHandler;
 import org.vaadin.numerosity.Subsystems.QuestionContentLoader;
 
 import com.vaadin.flow.component.button.Button;
@@ -23,10 +24,12 @@ public class rush extends VerticalLayout {
     private String correctAnswerKey; // Store the key ("a", "b", "c", or "d") of the correct answer
 
     private final QuestionContentLoader questionLoader;
+    private final LocalDatabaseHandler localDbHandler;
 
     @Autowired
-    public rush(QuestionContentLoader questionLoader) throws Exception {
+    public rush(QuestionContentLoader questionLoader, LocalDatabaseHandler localDbHandler) throws Exception {
         this.questionLoader = questionLoader;
+        this.localDbHandler = localDbHandler;
 
         setSizeFull();
 
@@ -87,7 +90,7 @@ public class rush extends VerticalLayout {
         }
     }
 
-    private void handleAnswer(int index) {
+    private void handleAnswer(int index) throws Exception {
          // Determine which button was pressed to answer
         String selectedAnswerKey = null;
         switch (index) {
@@ -105,7 +108,7 @@ public class rush extends VerticalLayout {
                 break;
         }
         boolean isCorrect = selectedAnswerKey != null && selectedAnswerKey.equals(correctAnswerKey);
-
+        localDbHandler.markQuestionAsAttempted(localDbHandler.getChosenQuestion());
         if (isCorrect) {
             score++;
             scoreDisplay.setText("Score: " + score);

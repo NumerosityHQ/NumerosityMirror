@@ -81,6 +81,14 @@ public class DatabaseHandler {
             throw new RuntimeException("Error checking user existence", e);
         }
     }
+
+    public void saveQuestionData(String questionId, String userId, String answerId, boolean isCorrect) {
+
+    }
+
+    public void deleteQuestionData(String questionId, String userId) {
+
+    }
     
     
 }
