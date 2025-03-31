@@ -65,7 +65,7 @@ public class rush extends VerticalLayout {
 
     private void loadQuestion() {
         try {
-            String question = questionLoader.loadAsText();
+            String question = questionLoader.loadRandomAsText();
             questionDisplay.setText(question);
 
             // Load all answer choices

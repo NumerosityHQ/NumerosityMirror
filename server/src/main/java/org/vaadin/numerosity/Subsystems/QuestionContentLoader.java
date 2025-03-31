@@ -15,7 +15,7 @@ public class QuestionContentLoader {
         this.localDbHandler = localDbHandler;
     }
 
-    public String loadAsText() throws Exception {
+    public String loadRandomAsText() throws Exception {
         Map<String, Object> question = localDbHandler.loadRandomQuestion();
         chosenQuestionMap = question;
         if (!question.containsKey("text")) {
@@ -24,12 +24,30 @@ public class QuestionContentLoader {
         return question.get("text").toString();
     }
 
-    public String loadAsLatex() throws Exception {
+    public String loadRandomAsLatex() throws Exception {
         Map<String, Object> question = localDbHandler.loadRandomQuestion();
         if (!question.containsKey("latex")) {
             throw new IllegalArgumentException("Question has no 'latex' field");
         }
         return question.get("latex").toString();
+    }
+
+    public String loadAsText(String questionId, String databasePath) throws Exception {
+        Map<String, Object> question = localDbHandler.loadSpecificQuestion(questionId, databasePath);
+        chosenQuestionMap = question;
+        if (!question.containsKey("text")) {
+            throw new IllegalArgumentException("Question has no 'text' field");
+        }
+        return question.get("text").toString();
+    }
+
+    public String loadAsLatex(String questionId, String databasePath) throws Exception {
+        Map<String, Object> question = localDbHandler.loadSpecificQuestion(questionId, databasePath);
+        chosenQuestionMap = question;
+        if (!question.containsKey("text")) {
+            throw new IllegalArgumentException("Question has no 'text' field");
+        }
+        return question.get("text").toString();
     }
 
     public String getAnswerChoice(String letter) throws Exception {
