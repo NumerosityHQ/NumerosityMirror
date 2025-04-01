@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.numerosity.Subsystems.LocalDatabaseHandler;
 import org.vaadin.numerosity.Subsystems.QuestionContentLoader;
+import org.vaadin.numerosity.Subsystems.UserManager;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
@@ -25,6 +26,9 @@ public class rush extends VerticalLayout {
 
     private final QuestionContentLoader questionLoader;
     private final LocalDatabaseHandler localDbHandler;
+
+    // Add a UserManager instance
+    private UserManager userManager = new UserManager(null);
 
     @Autowired
     public rush(QuestionContentLoader questionLoader, LocalDatabaseHandler localDbHandler) throws Exception {
@@ -118,6 +122,16 @@ public class rush extends VerticalLayout {
             Notification.show("Game Over! Final Score: " + score);
             resetGame();
         }
+
+        // Save user answers
+        Map<String, Object> userAnswers = new HashMap<>();
+        userAnswers.put("question", questionDisplay.getText());
+        userAnswers.put("selectedAnswer", selectedAnswerKey);
+        userAnswers.put("correctAnswer", correctAnswerKey);
+
+        userManager.saveUserAnswers(userAnswers);
+
+        loadQuestion();
     }
 
     private void resetGame() {

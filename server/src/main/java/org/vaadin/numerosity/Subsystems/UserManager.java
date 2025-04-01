@@ -1,5 +1,6 @@
 package org.vaadin.numerosity.Subsystems;
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -7,6 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 
 @Service
 public class UserManager {
@@ -150,5 +153,17 @@ public class UserManager {
         public Boolean is_correct = null;
         public String user_answer = null;
         public Integer user_time_taken = null;
+    }
+
+    private static final String FILE_PATH = "user_answers.json";
+    private Gson gson = new Gson();
+
+    // Method to save user answers to a JSON file
+    public void saveUserAnswers(Map<String, Object> userAnswers) {
+        try (FileWriter file = new FileWriter(FILE_PATH)) {
+            gson.toJson(userAnswers, file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

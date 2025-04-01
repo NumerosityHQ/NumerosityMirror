@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.vaadin.numerosity.Subsystems.UserManager;
 import org.vaadin.numerosity.repository.FsUserRepository;
 import org.vaadin.numerosity.repository.UserRepository;
 
@@ -50,6 +51,11 @@ public class ApplicationConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public UserManager userManager(PasswordEncoder passwordEncoder) {
+        return new UserManager(passwordEncoder);
     }
 
 }
