@@ -26,6 +26,7 @@ import com.google.firebase.auth.UserRecord;
 public class MainView extends VerticalLayout {
 
     private FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+    public static UserRecord createdUser = null; // Initialize userRecord to null 
 
     public MainView() {
         // Navigation Links
@@ -57,6 +58,7 @@ public class MainView extends VerticalLayout {
                 }
             });
             dialogLayout.add(loginSubmitButton);
+            
 
             Button signupSubmitButton = new Button("Signup", e -> {
                 UserRecord.CreateRequest request = new UserRecord.CreateRequest()
@@ -64,12 +66,16 @@ public class MainView extends VerticalLayout {
                         .setPassword(passwordField.getValue());
                 try {
                     UserRecord userRecord = firebaseAuth.createUser(request);
+                    createdUser = userRecord;
                     Notification.show("Signup successful! User ID: " + userRecord.getUid());
                 } catch (FirebaseAuthException ex) {
                     Notification.show("Signup failed: " + ex.getMessage());
                 }
                 dialog.close();
             });
+
+            
+
             dialogLayout.add(signupSubmitButton);
 
             dialog.add(dialogLayout);

@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.vaadin.numerosity.MainView;
 import org.vaadin.numerosity.Subsystems.UserManager;
 import org.vaadin.numerosity.repository.FsUserRepository;
 import org.vaadin.numerosity.repository.UserRepository;
@@ -19,7 +20,6 @@ import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.FirestoreOptions;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
-
 
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
@@ -36,11 +36,17 @@ import java.io.IOException;
 @EnableWebMvc
 public class ApplicationConfig {
 
+    private final MainView mainView;
+
     @Value("${firebase.project.id}")
     private String projectId;
 
     @Value("${firebase.credentials.path}")
     private String credentialsPath;
+
+    ApplicationConfig(MainView mainView) {
+        this.mainView = mainView;
+    }
 
     @Bean
     public Firestore getFirestore() {
@@ -84,6 +90,11 @@ public class ApplicationConfig {
 
         FirebaseApp firebaseApp = FirebaseApp.initializeApp(options);
         return FirestoreClient.getFirestore(firebaseApp);
+    }
+
+    @Bean
+    public MainView mainView() {
+        return new MainView();
     }
 
 }

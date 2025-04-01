@@ -16,6 +16,8 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 
+import org.vaadin.numerosity.MainView;
+
 @Route("rush")
 public class rush extends VerticalLayout {
 
@@ -27,10 +29,14 @@ public class rush extends VerticalLayout {
 
     private final QuestionContentLoader questionLoader;
     private final LocalDatabaseHandler localDbHandler;
+
     private FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
 
     @Autowired
     private DatabaseHandler firebaseDataHandler;
+
+    @Autowired
+    private MainView mainView;
 
     @Autowired
     public rush(QuestionContentLoader questionLoader, LocalDatabaseHandler localDbHandler) throws Exception {
@@ -130,8 +136,8 @@ public class rush extends VerticalLayout {
         userAnswers.put("correctAnswer", correctAnswerKey);
 
         // Assuming userId and problemId are available
-        String userId = "exampleUserId"; // Replace with actual user ID
-        String problemId = "exampleProblemId"; // Replace with actual problem ID
+        String userId = mainView.createdUser.toString(); // Replace with actual user ID
+        String problemId = "EXAMPLEAHH"; // Replace with actual problem ID
 
         firebaseDataHandler.saveAnsweredProblem(userId, problemId, userAnswers);
 
