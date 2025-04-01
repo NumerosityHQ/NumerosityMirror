@@ -83,12 +83,29 @@ public class DatabaseHandler {
     }
 
     public void saveQuestionData(String questionId, String userId, String answerId, boolean isCorrect) {
+        DocumentReference docRef = firestore.collection("userdata").document(userId);
+        Map<String, Object> questionData = new HashMap<>();
+        questionData.put("questionId", questionId);
+        questionData.put("answerId", answerId);
+        questionData.put("isCorrect", isCorrect);
+        questionData.put("timestamp", new Date());
 
+        try {
+            docRef.update("user_answers", FieldValue.arrayUnion(questionData)).get();
+        } catch (Exception e) {
+            logger.error("Error saving question data:", e);
+        }
     }
 
     public void deleteQuestionData(String questionId, String userId) {
+        DocumentReference docRef = firestore.collection("userdata").document(userId);
+        try {
+            Map<String, Object> questionData = new HashMap<>();
+            questionData.put("questionId", questionId);
 
+            docRef.update("user_answers", FieldValue.arrayRemove(questionData)).get();
+        } catch (Exception e) {
+            logger.error("Error deleting question data:", e);
+        }
     }
-    
-    
 }

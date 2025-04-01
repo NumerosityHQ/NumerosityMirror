@@ -41,6 +41,7 @@ public class ButtonInteraction implements Serializable {
     @Autowired
     private UserRepository userRepository;
     
+    
 }
  
 ====================== 
@@ -56,6 +57,7 @@ import org.vaadin.numerosity.Featureset.AppFunctions.zen;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.login.LoginForm;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.RouterLink;
@@ -68,41 +70,45 @@ public class MainView extends VerticalLayout {
         header.getStyle().set("text-align", "center");
         add(header);
 
-        // Navigation Links
-        Div navigationBar = new Div();
-        navigationBar.getStyle().set("width", "200px");
+        // Navigation Sidebar
+        VerticalLayout navigationBar = new VerticalLayout();
+        navigationBar.getStyle().set("width", "250px");
         navigationBar.getStyle().set("border-right", "1px solid black");
-        navigationBar.getStyle().set("height", "100%");
+        navigationBar.getStyle().set("height", "100vh");
+        navigationBar.getStyle().set("padding", "20px");
         navigationBar.getStyle().set("position", "fixed");
+        navigationBar.getStyle().set("display", "flex");
+        navigationBar.getStyle().set("align-items", "center");
 
+        LoginForm loginform = new LoginForm();
+        add(loginform);
+        // Navigation Links
         RouterLink practiceLink = new RouterLink("Practice", bank.class);
         RouterLink rushLink = new RouterLink("Rush", rush.class);
         RouterLink dailyLink = new RouterLink("Daily", zen.class);
 
-        navigationBar.add(practiceLink, rushLink, dailyLink);
-
         // Main Content Area
         Div contentArea = new Div();
-        contentArea.getStyle().set("margin-left", "220px");
+        contentArea.getStyle().set("margin-left", "270px");
         contentArea.getStyle().set("padding", "20px");
 
         H2 welcomeMessage = new H2("Welcome to Numerosity!");
         welcomeMessage.getStyle().set("text-align", "center");
         contentArea.add(welcomeMessage);
 
+        // Main Layout
         HorizontalLayout layout = new HorizontalLayout(navigationBar, contentArea);
         layout.setSizeFull();
+        layout.setFlexGrow(1, contentArea);
 
         add(layout);
     }
-}
- 
+} 
 ====================== 
  
 ==== File: C:\Git\Numerosity\server\src\main\java\org\vaadin\numerosity\config\ApplicationConfig.java ==== 
  
 package org.vaadin.numerosity.config;
-
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -110,6 +116,8 @@ import java.io.InputStream;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.vaadin.numerosity.repository.FsUserRepository;
 import org.vaadin.numerosity.repository.UserRepository;
@@ -117,7 +125,6 @@ import org.vaadin.numerosity.repository.UserRepository;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.FirestoreOptions;
-
 
 @Configuration
 @EnableWebMvc
@@ -129,18 +136,17 @@ public class ApplicationConfig {
     @Value("${firebase.credentials.path}")
     private String credentialsPath;
 
-
     @Bean
     public Firestore getFirestore() {
         try {
 
-        InputStream inStream = this.getClass().getClassLoader().getResourceAsStream(credentialsPath);    
-        GoogleCredentials credentials = GoogleCredentials.fromStream(inStream);
-        FirestoreOptions firestoreOptions = FirestoreOptions.getDefaultInstance().toBuilder()
-                .setProjectId(projectId)
-                .setCredentials(credentials)
-                .build();
-        return firestoreOptions.getService();
+            InputStream inStream = this.getClass().getClassLoader().getResourceAsStream(credentialsPath);
+            GoogleCredentials credentials = GoogleCredentials.fromStream(inStream);
+            FirestoreOptions firestoreOptions = FirestoreOptions.getDefaultInstance().toBuilder()
+                    .setProjectId(projectId)
+                    .setCredentials(credentials)
+                    .build();
+            return firestoreOptions.getService();
         } catch (IOException e) {
             throw new RuntimeException("Exception while initializing Firestore", e);
         }
@@ -151,9 +157,59 @@ public class ApplicationConfig {
         return new FsUserRepository(firestore);
     }
 
-    
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
 }
+ 
+====================== 
+ 
+==== File: C:\Git\Numerosity\server\src\main\java\org\vaadin\numerosity\entity\User.java ==== 
+ 
+// package org.vaadin.numerosity.entity;
+// import org.springframework.boot.autoconfigure.domain.EntityScan;
+// import org.springframework.data.annotation.Id;
+
+// // import jakarta.persistence.Entity;
+// import jakarta.persistence.GeneratedValue;
+// import jakarta.persistence.GenerationType;
+// // import jakarta.persistence.Id;
+
+// @EntityScan
+// public class User {
+
+//     @Id
+//     @GeneratedValue(strategy = GenerationType.IDENTITY)
+//     private String id;
+//     private String username;
+//     private String password;
+
+//     public String getId() {
+//         return id;
+//     }
+
+//     public void setId(String id) {
+//         this.id = id;
+//     }
+
+//     public String getUsername() {
+//         return username;
+//     }
+
+//     public void setUsername(String username) {
+//         this.username = username;
+//     }
+
+//     public String getPassword() {
+//         return password;
+//     }
+
+//     public void setPassword(String password) {
+//         this.password = password;
+//     }
+// }
  
 ====================== 
  
@@ -236,6 +292,7 @@ import org.vaadin.numerosity.Subsystems.QuestionContentLoader;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.login.LoginForm;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
@@ -287,11 +344,12 @@ public class rush extends VerticalLayout {
         add(scoreDisplay);
 
         loadQuestion();
+        
     }
 
     private void loadQuestion() {
         try {
-            String question = questionLoader.loadAsText();
+            String question = questionLoader.loadRandomAsText();
             questionDisplay.setText(question);
 
             // Load all answer choices
@@ -301,7 +359,7 @@ public class rush extends VerticalLayout {
             answerChoices.put("c", questionLoader.getAnswerChoice("c"));
             answerChoices.put("d", questionLoader.getAnswerChoice("d"));
 
-            //Determine the correct answer key
+            // Determine the correct answer key
             correctAnswerKey = questionLoader.getCorrectAnswerKey();
 
             // Set button text
@@ -317,7 +375,7 @@ public class rush extends VerticalLayout {
     }
 
     private void handleAnswer(int index) throws Exception {
-         // Determine which button was pressed to answer
+        // Determine which button was pressed to answer
         String selectedAnswerKey = null;
         switch (index) {
             case 0:
@@ -348,7 +406,7 @@ public class rush extends VerticalLayout {
     private void resetGame() {
         score = 0;
         scoreDisplay.setText("Score: 0");
-        loadQuestion(); //Load a new question after game over
+        loadQuestion(); // Load a new question after game over
     }
 }
  
@@ -573,9 +631,12 @@ import java.util.concurrent.ExecutionException;
 
 import org.vaadin.numerosity.repository.exception.DbException;
 
+import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.DocumentReference;
+import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.FieldValue;
 import com.google.cloud.firestore.Firestore;
+
 
 public class FsUserRepository implements UserRepository {
 
@@ -629,19 +690,35 @@ public class FsUserRepository implements UserRepository {
 
     @Override
     public Optional<Map<String, Object>> getUserStats(String userId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getUserStats'");
+        DocumentReference docRef = firestore.collection("users").document(userId);
+        ApiFuture<DocumentSnapshot> future = docRef.get();
+
+        try {
+            DocumentSnapshot document = future.get();
+            if (document.exists()) {
+                return Optional.of(document.getData());
+            } else {
+                return Optional.empty();
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            throw new DbException("Exception while getting user stats", e);
+        }
     }
 
     @Override
     public boolean userExists(String userId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'userExists'");
-    }
+         DocumentReference docRef = firestore.collection("users").document(userId);
+        ApiFuture<DocumentSnapshot> future = docRef.get();
 
+        try {
+            DocumentSnapshot document = future.get();
+            return document.exists();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new DbException("Exception while checking user existence", e);
+        }
+    }
     
-}
- 
+} 
 ====================== 
  
 ==== File: C:\Git\Numerosity\server\src\main\java\org\vaadin\numerosity\repository\UserRepository.java ==== 
@@ -789,25 +866,55 @@ public class UserService {
  
 package org.vaadin.numerosity.Subsystems;
 
+import java.time.Duration;
+import java.time.Instant;
+
 public class BackgroundProcess {
+    private Instant siteClockStart;
+    private Instant siteClockEnd;
+    private Instant questionClockStart;
+    private Instant questionClockEnd;
+
     public void startSiteClock() {
-
+        siteClockStart = Instant.now();
+        System.out.println("Site clock started at: " + siteClockStart);
     }
+
     public void endSiteClock() {
-
+        siteClockEnd = Instant.now();
+        System.out.println("Site clock ended at: " + siteClockEnd);
     }
-    public void getSiteClock() {
 
+    public Duration getSiteClock() {
+        if (siteClockStart != null && siteClockEnd != null) {
+            Duration duration = Duration.between(siteClockStart, siteClockEnd);
+            System.out.println("Site clock duration: " + duration);
+            return duration;
+        } else {
+            System.out.println("Site clock has not been started or ended.");
+            return Duration.ZERO;
+        }
     }
 
     public void startQuestionClock() {
-
+        questionClockStart = Instant.now();
+        System.out.println("Question clock started at: " + questionClockStart);
     }
+
     public void endQuestionClock() {
-
+        questionClockEnd = Instant.now();
+        System.out.println("Question clock ended at: " + questionClockEnd);
     }
-    public void getQuestionClock() {
 
+    public Duration getQuestionClock() {
+        if (questionClockStart != null && questionClockEnd != null) {
+            Duration duration = Duration.between(questionClockStart, questionClockEnd);
+            System.out.println("Question clock duration: " + duration);
+            return duration;
+        } else {
+            System.out.println("Question clock has not been started or ended.");
+            return Duration.ZERO;
+        }
     }
 }
  
@@ -900,14 +1007,31 @@ public class DatabaseHandler {
     }
 
     public void saveQuestionData(String questionId, String userId, String answerId, boolean isCorrect) {
+        DocumentReference docRef = firestore.collection("userdata").document(userId);
+        Map<String, Object> questionData = new HashMap<>();
+        questionData.put("questionId", questionId);
+        questionData.put("answerId", answerId);
+        questionData.put("isCorrect", isCorrect);
+        questionData.put("timestamp", new Date());
 
+        try {
+            docRef.update("user_answers", FieldValue.arrayUnion(questionData)).get();
+        } catch (Exception e) {
+            logger.error("Error saving question data:", e);
+        }
     }
 
     public void deleteQuestionData(String questionId, String userId) {
+        DocumentReference docRef = firestore.collection("userdata").document(userId);
+        try {
+            Map<String, Object> questionData = new HashMap<>();
+            questionData.put("questionId", questionId);
 
+            docRef.update("user_answers", FieldValue.arrayRemove(questionData)).get();
+        } catch (Exception e) {
+            logger.error("Error deleting question data:", e);
+        }
     }
-    
-    
 }
  
 ====================== 
@@ -1006,16 +1130,6 @@ public class DataPlotter {
  
 ====================== 
  
-==== File: C:\Git\Numerosity\server\src\main\java\org\vaadin\numerosity\Subsystems\FirebaseHandler.java ==== 
- 
-package org.vaadin.numerosity.Subsystems;
-
-public class FirebaseHandler {
-    
-}
- 
-====================== 
- 
 ==== File: C:\Git\Numerosity\server\src\main\java\org\vaadin\numerosity\Subsystems\LocalDatabaseHandler.java ==== 
  
 package org.vaadin.numerosity.Subsystems;
@@ -1076,7 +1190,13 @@ public class LocalDatabaseHandler {
             PrecalculusHard, CalculusEasy, CalculusMedium, CalculusHard, DailyEasy, DailyMedium, DailyHard,
             DailyChallenge };
 
-    private final String[] questions = { "q1", "q2", "q3" };
+            private final String[] questions = { 
+                "q1", "q2", "q3", "q4", "q5", 
+                "q6", "q7", "q8", "q9", "q10", 
+                "q11", "q12", "q13", "q14", "q15", 
+                "q16", "q17", "q18", "q19", "q20" 
+            };
+            
     Path databasePath = Paths.get(testing_directory, "questions.json");
 
     LocalDatabaseHandler(Application application) {
@@ -1303,6 +1423,55 @@ public class LocalDatabaseHandler {
  
 ====================== 
  
+==== File: C:\Git\Numerosity\server\src\main\java\org\vaadin\numerosity\Subsystems\LoginHandler.java ==== 
+ 
+package org.vaadin.numerosity.Subsystems;
+
+import java.util.concurrent.ExecutionException;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.auth.FirebaseToken;
+import com.google.firebase.auth.UserRecord;
+
+@Service
+public class LoginHandler {
+
+    @Autowired
+    private DatabaseHandler databaseHandler;
+
+    public String login(String email, String password) throws ExecutionException, InterruptedException {
+          try {
+              UserRecord userRecord = FirebaseAuth.getInstance().getUserByEmail(email);
+              String userId = userRecord.getUid();
+
+               // Ensure user exists in Firestore
+              if (!databaseHandler.userExists(userId)) {
+                  databaseHandler.createUserDocument(userId, email);
+              }
+
+              return FirebaseAuth.getInstance().createCustomToken(userId);
+          } catch (FirebaseAuthException e) {
+              return "Login failed: " + e.getMessage();
+          }
+      }
+
+    public boolean logout(String idToken) {
+        try {
+            FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(idToken);
+            FirebaseAuth.getInstance().revokeRefreshTokens(decodedToken.getUid());
+            return true;
+        } catch (FirebaseAuthException e) {
+            return false;
+        }
+    }
+}
+ 
+====================== 
+ 
 ==== File: C:\Git\Numerosity\server\src\main\java\org\vaadin\numerosity\Subsystems\QuestionContentLoader.java ==== 
  
 //  A class is needed to appropriately load text or latex content from questions
@@ -1322,7 +1491,7 @@ public class QuestionContentLoader {
         this.localDbHandler = localDbHandler;
     }
 
-    public String loadAsText() throws Exception {
+    public String loadRandomAsText() throws Exception {
         Map<String, Object> question = localDbHandler.loadRandomQuestion();
         chosenQuestionMap = question;
         if (!question.containsKey("text")) {
@@ -1331,12 +1500,30 @@ public class QuestionContentLoader {
         return question.get("text").toString();
     }
 
-    public String loadAsLatex() throws Exception {
+    public String loadRandomAsLatex() throws Exception {
         Map<String, Object> question = localDbHandler.loadRandomQuestion();
         if (!question.containsKey("latex")) {
             throw new IllegalArgumentException("Question has no 'latex' field");
         }
         return question.get("latex").toString();
+    }
+
+    public String loadAsText(String questionId, String databasePath) throws Exception {
+        Map<String, Object> question = localDbHandler.loadSpecificQuestion(questionId, databasePath);
+        chosenQuestionMap = question;
+        if (!question.containsKey("text")) {
+            throw new IllegalArgumentException("Question has no 'text' field");
+        }
+        return question.get("text").toString();
+    }
+
+    public String loadAsLatex(String questionId, String databasePath) throws Exception {
+        Map<String, Object> question = localDbHandler.loadSpecificQuestion(questionId, databasePath);
+        chosenQuestionMap = question;
+        if (!question.containsKey("text")) {
+            throw new IllegalArgumentException("Question has no 'text' field");
+        }
+        return question.get("text").toString();
     }
 
     public String getAnswerChoice(String letter) throws Exception {
@@ -1357,6 +1544,11 @@ public class QuestionContentLoader {
     }
     
 }
+ 
+====================== 
+ 
+==== File: C:\Git\Numerosity\server\src\main\java\org\vaadin\numerosity\Subsystems\UserManager.java ==== 
+ 
  
 ====================== 
  
@@ -1468,56 +1660,6 @@ package org.vaadin.numerosity.Subsystems.LegacyCode;
 //             throw new IllegalStateException("FirestoreClient has not been initialized. Call initialize() first.");
 //         }
 //         return firestoreInstance;
-//     }
-// }
- 
-====================== 
- 
-==== File: C:\Git\Numerosity\server\src\main\java\org\vaadin\numerosity\Subsystems\LegacyCode\LoginHandler.java ==== 
- 
-package org.vaadin.numerosity.Subsystems.LegacyCode;
-// package org.vaadin.numerosity.Subsystems;
-
-// import java.util.concurrent.ExecutionException;
-
-// import org.springframework.beans.factory.annotation.Autowired;
-// import org.springframework.stereotype.Service;
-
-// import com.google.firebase.auth.FirebaseAuth;
-// import com.google.firebase.auth.FirebaseAuthException;
-// import com.google.firebase.auth.FirebaseToken;
-// import com.google.firebase.auth.UserRecord;
-
-// @Service
-// public class LoginHandler {
-
-//     @Autowired
-//     private DatabaseHandler databaseHandler;
-
-//     public String login(String email, String password) throws ExecutionException, InterruptedException {
-//         try {
-//             UserRecord userRecord = FirebaseAuth.getInstance().getUserByEmail(email);
-//             String userId = userRecord.getUid();
-
-//             // Ensure user exists in Firestore
-//             if (!databaseHandler.userExists(userId)) {
-//                 databaseHandler.createUserDocument(userId, email);
-//             }
-
-//             return FirebaseAuth.getInstance().createCustomToken(userId);
-//         } catch (FirebaseAuthException e) {
-//             return "Login failed: " + e.getMessage();
-//         }
-//     }
-
-//     public boolean logout(String idToken) {
-//         try {
-//             FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(idToken);
-//             FirebaseAuth.getInstance().revokeRefreshTokens(decodedToken.getUid());
-//             return true;
-//         } catch (FirebaseAuthException e) {
-//             return false;
-//         }
 //     }
 // }
  

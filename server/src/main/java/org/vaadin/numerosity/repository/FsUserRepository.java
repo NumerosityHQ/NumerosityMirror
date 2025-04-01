@@ -8,9 +8,12 @@ import java.util.concurrent.ExecutionException;
 
 import org.vaadin.numerosity.repository.exception.DbException;
 
+import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.DocumentReference;
+import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.FieldValue;
 import com.google.cloud.firestore.Firestore;
+
 
 public class FsUserRepository implements UserRepository {
 
@@ -64,15 +67,32 @@ public class FsUserRepository implements UserRepository {
 
     @Override
     public Optional<Map<String, Object>> getUserStats(String userId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getUserStats'");
+        DocumentReference docRef = firestore.collection("users").document(userId);
+        ApiFuture<DocumentSnapshot> future = docRef.get();
+
+        try {
+            DocumentSnapshot document = future.get();
+            if (document.exists()) {
+                return Optional.of(document.getData());
+            } else {
+                return Optional.empty();
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            throw new DbException("Exception while getting user stats", e);
+        }
     }
 
     @Override
     public boolean userExists(String userId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'userExists'");
-    }
+         DocumentReference docRef = firestore.collection("users").document(userId);
+        ApiFuture<DocumentSnapshot> future = docRef.get();
 
+        try {
+            DocumentSnapshot document = future.get();
+            return document.exists();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new DbException("Exception while checking user existence", e);
+        }
+    }
     
 }

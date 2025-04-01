@@ -61,6 +61,7 @@ public class rush extends VerticalLayout {
         add(scoreDisplay);
 
         loadQuestion();
+
     }
 
     private void loadQuestion() {
@@ -75,7 +76,7 @@ public class rush extends VerticalLayout {
             answerChoices.put("c", questionLoader.getAnswerChoice("c"));
             answerChoices.put("d", questionLoader.getAnswerChoice("d"));
 
-            //Determine the correct answer key
+            // Determine the correct answer key
             correctAnswerKey = questionLoader.getCorrectAnswerKey();
 
             // Set button text
@@ -91,7 +92,7 @@ public class rush extends VerticalLayout {
     }
 
     private void handleAnswer(int index) throws Exception {
-         // Determine which button was pressed to answer
+        // Determine which button was pressed to answer
         String selectedAnswerKey = null;
         switch (index) {
             case 0:
@@ -122,6 +123,6 @@ public class rush extends VerticalLayout {
     private void resetGame() {
         score = 0;
         scoreDisplay.setText("Score: 0");
-        loadQuestion(); //Load a new question after game over
+        loadQuestion(); // Load a new question after game over
     }
 }
