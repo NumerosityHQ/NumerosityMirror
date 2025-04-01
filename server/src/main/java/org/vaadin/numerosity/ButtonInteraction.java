@@ -9,8 +9,10 @@ import org.vaadin.numerosity.repository.UserRepository;
 @Service
 public class ButtonInteraction implements Serializable {
 
+    private final UserRepository userRepository;
+
     @Autowired
-    private UserRepository userRepository;
-    
-    
+    public ButtonInteraction(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 }

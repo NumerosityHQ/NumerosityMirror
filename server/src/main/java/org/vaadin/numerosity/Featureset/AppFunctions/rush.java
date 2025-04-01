@@ -136,8 +136,8 @@ public class rush extends VerticalLayout {
         userAnswers.put("correctAnswer", correctAnswerKey);
 
         // Assuming userId and problemId are available
-        String userId = mainView.createdUser.toString(); // Replace with actual user ID
-        String problemId = "EXAMPLEAHH"; // Replace with actual problem ID
+        String userId = MainView.createdUser.toString(); // Replace with actual user ID
+        String problemId = questionLoader.getCurrentQuestionId(); // Replace with actual problem ID
 
         firebaseDataHandler.saveAnsweredProblem(userId, problemId, userAnswers);
 

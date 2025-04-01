@@ -7,6 +7,7 @@ import java.io.InputStream;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -20,23 +21,11 @@ import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.FirestoreOptions;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
-
-import com.google.auth.oauth2.GoogleCredentials;
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.FirebaseOptions;
 import com.google.firebase.cloud.FirestoreClient;
-import com.google.cloud.firestore.Firestore;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
-import java.io.FileInputStream;
-import java.io.IOException;
 
 @Configuration
 @EnableWebMvc
 public class ApplicationConfig {
-
-    private final MainView mainView;
 
     @Value("${firebase.project.id}")
     private String projectId;
@@ -44,14 +33,9 @@ public class ApplicationConfig {
     @Value("${firebase.credentials.path}")
     private String credentialsPath;
 
-    ApplicationConfig(MainView mainView) {
-        this.mainView = mainView;
-    }
-
     @Bean
     public Firestore getFirestore() {
         try {
-
             InputStream inStream = this.getClass().getClassLoader().getResourceAsStream(credentialsPath);
             GoogleCredentials credentials = GoogleCredentials.fromStream(inStream);
             FirestoreOptions firestoreOptions = FirestoreOptions.getDefaultInstance().toBuilder()
@@ -93,8 +77,8 @@ public class ApplicationConfig {
     }
 
     @Bean
+    @Lazy
     public MainView mainView() {
         return new MainView();
     }
-
 }
