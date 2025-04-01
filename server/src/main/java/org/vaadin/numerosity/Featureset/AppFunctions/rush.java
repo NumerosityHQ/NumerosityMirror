@@ -6,8 +6,9 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.numerosity.Subsystems.LocalDatabaseHandler;
 import org.vaadin.numerosity.Subsystems.QuestionContentLoader;
-import org.vaadin.numerosity.Subsystems.UserManager;
+import org.vaadin.numerosity.Subsystems.DatabaseHandler;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
@@ -26,9 +27,10 @@ public class rush extends VerticalLayout {
 
     private final QuestionContentLoader questionLoader;
     private final LocalDatabaseHandler localDbHandler;
+    private FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
 
-    // Add a UserManager instance
-    private UserManager userManager = new UserManager(null);
+    @Autowired
+    private DatabaseHandler firebaseDataHandler;
 
     @Autowired
     public rush(QuestionContentLoader questionLoader, LocalDatabaseHandler localDbHandler) throws Exception {
@@ -65,7 +67,6 @@ public class rush extends VerticalLayout {
         add(scoreDisplay);
 
         loadQuestion();
-
     }
 
     private void loadQuestion() {
@@ -112,15 +113,14 @@ public class rush extends VerticalLayout {
                 selectedAnswerKey = "d";
                 break;
         }
-        boolean isCorrect = selectedAnswerKey != null && selectedAnswerKey.equals(correctAnswerKey);
-        localDbHandler.markQuestionAsAttempted(localDbHandler.getChosenQuestion());
-        if (isCorrect) {
+
+        // Check if the answer is correct and update score
+        if (selectedAnswerKey.equals(correctAnswerKey)) {
             score++;
             scoreDisplay.setText("Score: " + score);
-            loadQuestion();
+            Notification.show("Correct!");
         } else {
-            Notification.show("Game Over! Final Score: " + score);
-            resetGame();
+            Notification.show("Incorrect!");
         }
 
         // Save user answers
@@ -129,14 +129,13 @@ public class rush extends VerticalLayout {
         userAnswers.put("selectedAnswer", selectedAnswerKey);
         userAnswers.put("correctAnswer", correctAnswerKey);
 
-        userManager.saveUserAnswers(userAnswers);
+        // Assuming userId and problemId are available
+        String userId = "exampleUserId"; // Replace with actual user ID
+        String problemId = "exampleProblemId"; // Replace with actual problem ID
 
+        firebaseDataHandler.saveAnsweredProblem(userId, problemId, userAnswers);
+
+        // Load next question
         loadQuestion();
-    }
-
-    private void resetGame() {
-        score = 0;
-        scoreDisplay.setText("Score: 0");
-        loadQuestion(); // Load a new question after game over
     }
 }

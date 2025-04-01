@@ -10,15 +10,27 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.google.cloud.firestore.DocumentReference;
+import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.FieldValue;
 import com.google.cloud.firestore.Firestore;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import com.google.firebase.cloud.FirestoreClient;
+import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.DocumentReference;
+import com.google.cloud.firestore.DocumentSnapshot;
+import com.google.cloud.firestore.WriteResult;
+
+import java.util.concurrent.ExecutionException;
 
 @Service
 public class DatabaseHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(DatabaseHandler.class);
     private final Firestore firestore;
-    private String userId; 
+    private String userId;
     private String username;
 
     public DatabaseHandler(Firestore firestore) {
@@ -28,17 +40,17 @@ public class DatabaseHandler {
     public void createUserDocument(String userId, String username) throws ExecutionException, InterruptedException {
         if (userId == null || userId.trim().isEmpty()) {
             logger.error("User ID cannot be null or empty.");
-            throw new IllegalArgumentException("User ID cannot be null or empty.");  // Or handle differently
+            throw new IllegalArgumentException("User ID cannot be null or empty."); // Or handle differently
         }
         if (username == null || username.trim().isEmpty()) {
             logger.error("Username cannot be null or empty.");
-            throw new IllegalArgumentException("Username cannot be null or empty.");  // Or handle differently
+            throw new IllegalArgumentException("Username cannot be null or empty."); // Or handle differently
         }
         this.userId = userId;
         this.username = username;
 
         DocumentReference docRef = firestore.collection("users").document(userId);
-        Map<String, Object> userData = new HashMap<>();  // Specify type parameters
+        Map<String, Object> userData = new HashMap<>(); // Specify type parameters
         userData.put("username", username);
         userData.put("created_at", new Date());
         userData.put("correct", 0);
@@ -52,7 +64,7 @@ public class DatabaseHandler {
     public void updateStatistic(String userId, String field, int delta)
             throws ExecutionException, InterruptedException {
         DocumentReference docRef = firestore.collection("users").document(userId);
-        Map<String, Object> updates = new HashMap<>();  // Specify type parameters
+        Map<String, Object> updates = new HashMap<>(); // Specify type parameters
         updates.put(field, FieldValue.increment(delta));
         docRef.update(updates).get();
     }
@@ -106,6 +118,66 @@ public class DatabaseHandler {
             docRef.update("user_answers", FieldValue.arrayRemove(questionData)).get();
         } catch (Exception e) {
             logger.error("Error deleting question data:", e);
+        }
+    }
+
+    private Firestore dbFirestore = FirestoreClient.getFirestore();
+
+    // Method to save user info
+    public String saveUserInfo(String userId, Map<String, Object> userInfo) {
+        DocumentReference documentReference = dbFirestore.collection("users").document(userId);
+        try {
+            WriteResult writeResult = documentReference.set(userInfo).get();
+            return writeResult.getUpdateTime().toString();
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    // Method to save answered problem data
+    public String saveAnsweredProblem(String userId, String problemId, Map<String, Object> problemData) {
+        DocumentReference documentReference = dbFirestore.collection("users").document(userId)
+                .collection("answeredProblems").document(problemId);
+        try {
+            WriteResult writeResult = documentReference.set(problemData).get();
+            return writeResult.getUpdateTime().toString();
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    // Method to retrieve user info
+    public Map<String, Object> getUserInfo(String userId) {
+        DocumentReference documentReference = dbFirestore.collection("users").document(userId);
+        try {
+            DocumentSnapshot documentSnapshot = documentReference.get().get();
+            if (documentSnapshot.exists()) {
+                return documentSnapshot.getData();
+            } else {
+                return null;
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    // Method to retrieve answered problem data
+    public Map<String, Object> getAnsweredProblem(String userId, String problemId) {
+        DocumentReference documentReference = dbFirestore.collection("users").document(userId)
+                .collection("answeredProblems").document(problemId);
+        try {
+            DocumentSnapshot documentSnapshot = documentReference.get().get();
+            if (documentSnapshot.exists()) {
+                return documentSnapshot.getData();
+            } else {
+                return null;
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 }
