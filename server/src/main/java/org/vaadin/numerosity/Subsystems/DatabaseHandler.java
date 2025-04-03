@@ -13,17 +13,8 @@ import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.FieldValue;
 import com.google.cloud.firestore.Firestore;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import com.google.firebase.cloud.FirestoreClient;
-import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.DocumentReference;
-import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.WriteResult;
-
-import java.util.concurrent.ExecutionException;
+import com.google.firebase.cloud.FirestoreClient;
 
 @Service
 public class DatabaseHandler {
@@ -32,6 +23,7 @@ public class DatabaseHandler {
     private final Firestore firestore;
     private String userId;
     private String username;
+    // Other relevant user data (e.g., email, password - use with caution)
 
     public DatabaseHandler(Firestore firestore) {
         this.firestore = firestore;
@@ -82,30 +74,6 @@ public class DatabaseHandler {
             updateStatistic(userId, "wrong", 1);
         } catch (ExecutionException | InterruptedException e) {
             logger.error("Error incrementing wrong count:", e);
-        }
-    }
-
-    public boolean userExists(String userId) {
-        DocumentReference docRef = firestore.collection("users").document(userId);
-        try {
-            return docRef.get().get().exists();
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException("Error checking user existence", e);
-        }
-    }
-
-    public void saveQuestionData(String questionId, String userId, String answerId, boolean isCorrect) {
-        DocumentReference docRef = firestore.collection("userdata").document(userId);
-        Map<String, Object> questionData = new HashMap<>();
-        questionData.put("questionId", questionId);
-        questionData.put("answerId", answerId);
-        questionData.put("isCorrect", isCorrect);
-        questionData.put("timestamp", new Date());
-
-        try {
-            docRef.update("user_answers", FieldValue.arrayUnion(questionData)).get();
-        } catch (Exception e) {
-            logger.error("Error saving question data:", e);
         }
     }
 
@@ -179,5 +147,79 @@ public class DatabaseHandler {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public void createUserAnswers(String userId) throws ExecutionException, InterruptedException {
+        DocumentReference answersDocRef = firestore.collection("Database/UserData").document(userId)
+                .collection("UserID").document("user_answers");
+        Map<String, Object> answersData = new HashMap<>();
+        answersData.put("answers", new HashMap<>());
+
+        answersDocRef.set(answersData).get();
+    }
+
+    public void createUserInfo(String userId) throws ExecutionException, InterruptedException {
+        DocumentReference infoDocRef = firestore.collection("Database/UserData").document(userId).collection("UserID")
+                .document("user_info");
+        Map<String, Object> infoData = new HashMap<>();
+        infoData.put("info", new HashMap<>());
+
+        infoDocRef.set(infoData).get();
+    }
+
+    public void incrementCorrect(String userId) {
+        try {
+            updateStatistic(userId, "correct", 1);
+        } catch (ExecutionException | InterruptedException e) {
+            logger.error("Error incrementing correct count:", e);
+        }
+    }
+
+    public void incrementWrong(String userId) {
+        try {
+            updateStatistic(userId, "wrong", 1);
+        } catch (ExecutionException | InterruptedException e) {
+            logger.error("Error incrementing wrong count:", e);
+        }
+    }
+
+    public boolean userExists(String userId) {
+        DocumentReference docRef = firestore.collection("users").document(userId);
+        try {
+            return docRef.get().get().exists();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error checking user existence", e);
+        }
+    }
+
+    public void saveQuestionData(String questionId, String userId, String answerId, boolean isCorrect) {
+        DocumentReference docRef = firestore.collection("userdata").document(userId);
+        Map<String, Object> questionData = new HashMap<>();
+        questionData.put("questionId", questionId);
+        questionData.put("answerId", answerId);
+        questionData.put("isCorrect", isCorrect);
+        questionData.put("timestamp", new Date());
+
+        try {
+            docRef.set(questionData).get();
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error("Error saving question data:", e);
+        }
+    }
+
+    public String getUserId() {
+        return this.userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 }

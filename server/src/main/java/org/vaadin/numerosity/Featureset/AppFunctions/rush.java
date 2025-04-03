@@ -4,9 +4,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.vaadin.numerosity.MainView;
+import org.vaadin.numerosity.Subsystems.DatabaseHandler;
 import org.vaadin.numerosity.Subsystems.LocalDatabaseHandler;
 import org.vaadin.numerosity.Subsystems.QuestionContentLoader;
-import org.vaadin.numerosity.Subsystems.DatabaseHandler;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.vaadin.flow.component.button.Button;
@@ -15,8 +16,6 @@ import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
-
-import org.vaadin.numerosity.MainView;
 
 @Route("rush")
 public class rush extends VerticalLayout {
@@ -37,6 +36,9 @@ public class rush extends VerticalLayout {
 
     @Autowired
     private MainView mainView;
+
+    @Autowired
+    private DatabaseHandler databaseHandler;
 
     @Autowired
     public rush(QuestionContentLoader questionLoader, LocalDatabaseHandler localDbHandler) throws Exception {
@@ -102,6 +104,12 @@ public class rush extends VerticalLayout {
         }
     }
 
+      // // Call these methods at appropriate places in your code, e.g., after a user
+    // answers a question
+    // databaseHandler.saveQuestionData(questionId, userId, answerId, isCorrect);
+    // databaseHandler.incrementCorrect(userId);
+    // databaseHandler.incrementWrong(userId);
+
     private void handleAnswer(int index) throws Exception {
         // Determine which button was pressed to answer
         String selectedAnswerKey = null;
@@ -123,9 +131,11 @@ public class rush extends VerticalLayout {
         // Check if the answer is correct and update score
         if (selectedAnswerKey.equals(correctAnswerKey)) {
             score++;
+            databaseHandler.incrementCorrect(databaseHandler.getUserId());
             scoreDisplay.setText("Score: " + score);
             Notification.show("Correct!");
         } else {
+            databaseHandler.incrementWrong(databaseHandler.getUserId());
             Notification.show("Incorrect!");
         }
 
@@ -135,11 +145,8 @@ public class rush extends VerticalLayout {
         userAnswers.put("selectedAnswer", selectedAnswerKey);
         userAnswers.put("correctAnswer", correctAnswerKey);
 
-        // Assuming userId and problemId are available
-        String userId = MainView.createdUser.toString(); // Replace with actual user ID
-        String problemId = questionLoader.getCurrentQuestionId(); // Replace with actual problem ID
-
-        firebaseDataHandler.saveAnsweredProblem(userId, problemId, userAnswers);
+         // log answer first
+         databaseHandler.saveQuestionData(questionLoader.getCurrentQuestionId(), databaseHandler.getUserId(), selectedAnswerKey, selectedAnswerKey.equals(correctAnswerKey));
 
         // Load next question
         loadQuestion();
