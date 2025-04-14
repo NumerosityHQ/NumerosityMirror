@@ -27,6 +27,7 @@ public class MainView extends VerticalLayout {
 
     private FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
     public static UserRecord createdUser = null; // Initialize userRecord to null 
+    public String userEmail = null;
 
     public MainView() {
         // Navigation Links
@@ -50,6 +51,7 @@ public class MainView extends VerticalLayout {
             Button loginSubmitButton = new Button("Login", e -> {
                 try {
                     UserRecord userRecord = firebaseAuth.getUserByEmail(emailField.getValue());
+                    userEmail = emailField.getValue();
                     // Add your password verification logic here
                     Notification.show("Login successful! Welcome, " + userRecord.getEmail());
                     dialog.close();

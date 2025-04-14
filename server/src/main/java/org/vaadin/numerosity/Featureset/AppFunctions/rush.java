@@ -28,6 +28,8 @@ public class rush extends VerticalLayout {
 
     private final QuestionContentLoader questionLoader;
     private final LocalDatabaseHandler localDbHandler;
+    // private final DatabaseHandler databaseHandler;
+    String selectedAnswerKey = null;
 
     private FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
 
@@ -41,9 +43,10 @@ public class rush extends VerticalLayout {
     private DatabaseHandler databaseHandler;
 
     @Autowired
-    public rush(QuestionContentLoader questionLoader, LocalDatabaseHandler localDbHandler) throws Exception {
+    public rush(QuestionContentLoader questionLoader, LocalDatabaseHandler localDbHandler, DatabaseHandler databaseHandler) throws Exception {
         this.questionLoader = questionLoader;
         this.localDbHandler = localDbHandler;
+        this.databaseHandler = databaseHandler;
 
         setSizeFull();
 
@@ -104,15 +107,17 @@ public class rush extends VerticalLayout {
         }
     }
 
-      // // Call these methods at appropriate places in your code, e.g., after a user
+    // // Call these methods at appropriate places in your code, e.g., after a user
     // answers a question
     // databaseHandler.saveQuestionData(questionId, userId, answerId, isCorrect);
     // databaseHandler.incrementCorrect(userId);
     // databaseHandler.incrementWrong(userId);
 
+   // String userId = databaseHandler.getUserId();
+
     private void handleAnswer(int index) throws Exception {
         // Determine which button was pressed to answer
-        String selectedAnswerKey = null;
+
         switch (index) {
             case 0:
                 selectedAnswerKey = "a";
@@ -131,11 +136,11 @@ public class rush extends VerticalLayout {
         // Check if the answer is correct and update score
         if (selectedAnswerKey.equals(correctAnswerKey)) {
             score++;
-            databaseHandler.incrementCorrect(databaseHandler.getUserId());
+          //  databaseHandler.incrementCorrect(userId);
             scoreDisplay.setText("Score: " + score);
             Notification.show("Correct!");
         } else {
-            databaseHandler.incrementWrong(databaseHandler.getUserId());
+          //  databaseHandler.incrementWrong(userId);
             Notification.show("Incorrect!");
         }
 
@@ -145,8 +150,9 @@ public class rush extends VerticalLayout {
         userAnswers.put("selectedAnswer", selectedAnswerKey);
         userAnswers.put("correctAnswer", correctAnswerKey);
 
-         // log answer first
-         databaseHandler.saveQuestionData(questionLoader.getCurrentQuestionId(), databaseHandler.getUserId(), selectedAnswerKey, selectedAnswerKey.equals(correctAnswerKey));
+        // log answer first
+        // databaseHandler.saveQuestionData(questionLoader.getCurrentQuestionId(), userId, selectedAnswerKey,
+        //         selectedAnswerKey.equals(correctAnswerKey));
 
         // Load next question
         loadQuestion();
