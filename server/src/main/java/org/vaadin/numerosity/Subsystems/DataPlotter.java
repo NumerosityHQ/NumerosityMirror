@@ -36,16 +36,19 @@ public class DataPlotter {
         }
     }
 
-    public void plotData(String userId, String questionId, boolean correct, long timeTakenMillis, String difficulty, String questionTag) {
+    public void plotData(String userId, String questionId, boolean correct, long timeTakenMillis, String difficulty,
+            String questionTag) {
         try {
-            Map<String, Object> plotData = createPlotData(userId, questionId, correct, timeTakenMillis, difficulty, questionTag);
+            Map<String, Object> plotData = createPlotData(userId, questionId, correct, timeTakenMillis, difficulty,
+                    questionTag);
             savePlotData(plotData);
         } catch (IOException e) {
             logger.error("Failed to plot data for user {} and question {}: {}", userId, questionId, e.getMessage(), e);
         }
     }
 
-    private Map<String, Object> createPlotData(String userId, String questionId, boolean correct, long timeTakenMillis, String difficulty, String questionTag) {
+    private Map<String, Object> createPlotData(String userId, String questionId, boolean correct, long timeTakenMillis,
+            String difficulty, String questionTag) {
         Map<String, Object> data = new HashMap<>();
         data.put("user_id", userId);
         data.put("id", questionId);
@@ -57,7 +60,7 @@ public class DataPlotter {
         // Format the current timestamp
         Instant now = Instant.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
-        .withZone(ZoneId.of("UTC"));
+                .withZone(ZoneId.of("UTC"));
         String timestamp = formatter.format(now);
 
         data.put("answered_at", timestamp);

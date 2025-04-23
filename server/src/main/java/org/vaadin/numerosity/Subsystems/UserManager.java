@@ -51,11 +51,10 @@ public class UserManager {
 
         // Create user info JSON
         UserInfo userInfo = new UserInfo(
-            userId,
-            dob,
-            username,
-            passwordEncoder.encode(password)
-        );
+                userId,
+                dob,
+                username,
+                passwordEncoder.encode(password));
         writeJson(userDir.resolve("user_info.json"), userInfo);
 
         // Create empty answers JSON
@@ -67,8 +66,9 @@ public class UserManager {
 
     public boolean login(String username, String password) throws IOException {
         Path userDir = findUserDirectory(username);
-        if (userDir == null) return false;
-        
+        if (userDir == null)
+            return false;
+
         UserInfo userInfo = readJson(userDir.resolve("user_info.json"), UserInfo.class);
         return passwordEncoder.matches(password, userInfo.password);
     }
@@ -77,8 +77,8 @@ public class UserManager {
         Path userDir = BASE_DIR.resolve(userId);
         if (Files.exists(userDir)) {
             Files.walk(userDir)
-                 .sorted(Comparator.reverseOrder())
-                 .forEach(this::deleteSilently);
+                    .sorted(Comparator.reverseOrder())
+                    .forEach(this::deleteSilently);
         }
     }
 
@@ -105,8 +105,9 @@ public class UserManager {
     }
 
     private Path findUserDirectory(String username) throws IOException {
-        if (!Files.exists(BASE_DIR)) return null;
-        
+        if (!Files.exists(BASE_DIR))
+            return null;
+
         try (DirectoryStream<Path> dirs = Files.newDirectoryStream(BASE_DIR)) {
             for (Path dir : dirs) {
                 UserInfo info = readJson(dir.resolve("user_info.json"), UserInfo.class);
@@ -129,7 +130,8 @@ public class UserManager {
     private void deleteSilently(Path path) {
         try {
             Files.delete(path);
-        } catch (IOException ignored) {}
+        } catch (IOException ignored) {
+        }
     }
 
     // Data classes for JSON serialization
@@ -139,7 +141,9 @@ public class UserManager {
         public String username;
         public String password;
 
-        public UserInfo() {} // For Jackson
+        public UserInfo() {
+        } // For Jackson
+
         public UserInfo(String id, String dob, String username, String password) {
             this.id = id;
             this.dob = dob;
