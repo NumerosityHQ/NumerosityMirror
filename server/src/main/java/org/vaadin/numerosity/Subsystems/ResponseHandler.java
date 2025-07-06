@@ -1,4 +1,4 @@
-package org.vaadin.numerosity.Subsystems.LegacyCode;
+package org.vaadin.numerosity.Subsystems;
 // // ResponseHandler.java  (Adjust constructor)
 // package org.vaadin.numerosity.Subsystems;
 
