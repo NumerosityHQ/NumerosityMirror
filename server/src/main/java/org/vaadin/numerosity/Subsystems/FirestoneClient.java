@@ -1,4 +1,4 @@
-package org.vaadin.numerosity.Subsystems.LegacyCode;
+package org.vaadin.numerosity.Subsystems;
 // package org.vaadin.numerosity.Subsystems;
 
 // import java.io.FileInputStream;
