@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Numerosity</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
   <div class="blob-container">
     <div class="blob"></div>
@@ -36,14 +38,81 @@
       <p>Seamless integration with Firebase Firestore and Auth.</p>
     </div>
   </section>
+  <center>
+    <div class="buttons">
+      <button id="open-readme" class="btn" type="button">Open README</button>
+    </div>
+  </center>
+  <br><br>
   <div class="social">
     <a href="https://github.com/numerosityhq" class="dot-btn" aria-label="GitHub">
-      <svg fill="none" stroke-width="2" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C5.27.65 4.09 1 4.09 1A5.07 5.07 0 004 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 21.13V25"/></svg>
+      <svg fill="none" stroke-width="2" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C5.27.65 4.09 1 4.09 1A5.07 5.07 0 004 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 21.13V25" />
+      </svg>
     </a>
     <a href="https://linkedin.com/in/numerosity-hq" class="dot-btn" aria-label="LinkedIn">
-      <svg fill="none" stroke-width="2" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 8a6 6 0 016 6v7h-4v-6a2 2 0 00-4 0v6h-4v-7a6 6 0 016-6z"/><rect x="2" y="9" width="4" height="12"/></svg>
+      <svg fill="none" stroke-width="2" stroke="currentColor" viewBox="0 0 24 24">
+        <path d="M16 8a6 6 0 016 6v7h-4v-6a2 2 0 00-4 0v6h-4v-7a6 6 0 016-6z" />
+        <rect x="2" y="9" width="4" height="12" />
+      </svg>
     </a>
+    
   </div>
-<script src="physics.js"></script>
+
+  <!-- Markdown renderer + sanitizer + GitHub-markdown CSS -->
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.1.0/github-markdown.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
+
+  <!-- README render area -->
+  <div id="doc-content" class="markdown-body" style="margin-top:1rem; display:none;"></div>
+  <script>
+    (function () {
+      const btn = document.getElementById('open-readme');
+      const container = document.getElementById('doc-content');
+
+      async function fetchReadme() {
+        // Try common filename variants
+        const names = ['README.md', 'Readme.md', 'readme.md'];
+        let text = null;
+        for (const name of names) {
+          try {
+            const res = await fetch(name);
+            if (!res.ok) continue;
+            text = await res.text();
+            break;
+          } catch (e) {
+            // continue to next variant
+          }
+        }
+        return text;
+      }
+
+      async function showReadme() {
+        btn.disabled = true;
+        btn.textContent = 'Loading...';
+        const md = await fetchReadme();
+        if (!md) {
+          btn.disabled = false;
+          btn.textContent = 'Open README';
+          container.style.display = 'block';
+          container.innerHTML = '<p><em>Unable to load README.md. Ensure the file is available and served by your web server.</em></p>';
+          return;
+        }
+        // Convert markdown -> HTML, sanitize, and insert
+        const html = marked.parse(md);
+        container.innerHTML = DOMPurify.sanitize(html);
+        container.style.display = 'block';
+        btn.textContent = 'Refresh README';
+        btn.disabled = false;
+      }
+
+      btn.addEventListener('click', showReadme);
+    })();
+  </script>
+  <script src="physics.js"></script>
 </body>
+
 </html>

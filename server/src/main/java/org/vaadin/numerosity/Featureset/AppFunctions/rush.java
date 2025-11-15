@@ -17,31 +17,55 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 
+/**
+ * Vaadin view for the Rush Mode quiz interface.
+ * Presents questions quickly with scoring.
+ */
 @Route("rush")
 public class rush extends VerticalLayout {
 
+    /** Div for displaying the question. */
     private Div questionDisplay = new Div();
+    /** Array of buttons for answer choices. */
     private Button[] answerButtons = new Button[4];
+    /** Div for displaying the score. */
     private Div scoreDisplay = new Div();
+    /** Current score. */
     private int score = 0;
+    /** The key of the correct answer. */
     private String correctAnswerKey; // Store the key ("a", "b", "c", or "d") of the correct answer
 
+    /** Injected QuestionContentLoader. */
     private final QuestionContentLoader questionLoader;
+    /** Injected LocalDatabaseHandler. */
     private final LocalDatabaseHandler localDbHandler;
     // private final DatabaseHandler databaseHandler;
+    /** The selected answer key. */
     String selectedAnswerKey = null;
 
+    /** Firebase Auth instance. */
     private FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
 
+    /** Injected DatabaseHandler. */
     @Autowired
     private DatabaseHandler firebaseDataHandler;
 
+    /** Injected MainView. */
     @Autowired
     private MainView mainView;
 
+    /** Injected DatabaseHandler. */
     @Autowired
     private DatabaseHandler databaseHandler;
 
+    /**
+     * Constructor injecting dependencies and setting up the UI.
+     *
+     * @param questionLoader the question content loader
+     * @param localDbHandler the local database handler
+     * @param databaseHandler the database handler
+     * @throws Exception if initialization fails
+     */
     @Autowired
     public rush(QuestionContentLoader questionLoader, LocalDatabaseHandler localDbHandler, DatabaseHandler databaseHandler) throws Exception {
         this.questionLoader = questionLoader;
@@ -80,6 +104,9 @@ public class rush extends VerticalLayout {
         loadQuestion();
     }
 
+    /**
+     * Loads a new question and updates the UI.
+     */
     private void loadQuestion() {
         try {
             String question = questionLoader.loadRandomAsText();

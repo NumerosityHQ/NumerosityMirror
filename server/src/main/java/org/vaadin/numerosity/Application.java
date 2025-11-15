@@ -15,6 +15,11 @@ import com.vaadin.flow.theme.Theme;
 @Theme(variant = "Lumo.dark")
 public class Application implements AppShellConfigurator {
 
+    /**
+     * Main method to run the Spring Boot application.
+     *
+     * @param args command line arguments
+     */
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
     }

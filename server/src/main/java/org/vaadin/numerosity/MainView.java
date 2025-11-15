@@ -22,13 +22,23 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.UserRecord;
 
+/**
+ * Main view of the Vaadin application, serving as the home page.
+ * Provides navigation and login/signup functionality.
+ */
 @Route("")
 public class MainView extends VerticalLayout {
 
+    /** Firebase Auth instance. */
     private FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
-    public static UserRecord createdUser = null; // Initialize userRecord to null 
+    /** The last created user record. */
+    public static UserRecord createdUser = null; // Initialize userRecord to null
+    /** The current user's email. */
     public String userEmail = null;
 
+    /**
+     * Constructor that sets up the UI components for the main view.
+     */
     public MainView() {
         // Navigation Links
         Div navigationBar = new Div();

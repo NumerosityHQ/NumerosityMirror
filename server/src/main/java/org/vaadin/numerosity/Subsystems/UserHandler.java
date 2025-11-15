@@ -1,4 +1,8 @@
 package org.vaadin.numerosity.Subsystems;
+/**
+ * Placeholder or example class for handling user operations.
+ * This class is commented out and not currently used.
+ */
 // package org.vaadin.numerosity.Subsystems;
 
 // import java.util.concurrent.ExecutionException;

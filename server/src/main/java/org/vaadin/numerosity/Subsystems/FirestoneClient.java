@@ -8,6 +8,10 @@ package org.vaadin.numerosity.Subsystems;
 // import com.google.cloud.firestore.Firestore;
 // import com.google.cloud.firestore.FirestoreOptions;
 
+/**
+ * Placeholder or example class for Firestore client initialization.
+ * This class is commented out and not currently used.
+ */
 // /*
 //  * public class FirestoreClient { // Renamed class
 //     private static Firestore firestoreInstance;

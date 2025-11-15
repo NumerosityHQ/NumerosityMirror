@@ -16,13 +16,23 @@ import org.springframework.stereotype.Service;
 
 import com.google.gson.Gson;
 
+/**
+ * Service class for plotting and saving data related to user question interactions.
+ * Handles creation and storage of plot data in JSON format.
+ */
 @Service
 public class DataPlotter {
 
+    /** Logger for this class. */
     private static final Logger logger = LoggerFactory.getLogger(DataPlotter.class);
+    /** Directory path for storing plot data. */
     private static final String PLOT_DIR = "database/dataplots";
+    /** Gson instance for JSON serialization. */
     private final Gson gson = new Gson();
 
+    /**
+     * Constructor that initializes the DataPlotter by ensuring the plot directory exists.
+     */
     public DataPlotter() {
         // Ensure the plot directory exists
         Path plotDirPath = Paths.get(PLOT_DIR);
@@ -36,6 +46,16 @@ public class DataPlotter {
         }
     }
 
+    /**
+     * Plots data for a user's question interaction and saves it to a file.
+     *
+     * @param userId the user ID
+     * @param questionId the question ID
+     * @param correct whether the answer was correct
+     * @param timeTakenMillis time taken to answer in milliseconds
+     * @param difficulty the difficulty level
+     * @param questionTag the question tag
+     */
     public void plotData(String userId, String questionId, boolean correct, long timeTakenMillis, String difficulty,
             String questionTag) {
         try {
@@ -47,6 +67,17 @@ public class DataPlotter {
         }
     }
 
+    /**
+     * Creates a map of plot data from the given parameters.
+     *
+     * @param userId the user ID
+     * @param questionId the question ID
+     * @param correct whether the answer was correct
+     * @param timeTakenMillis time taken to answer in milliseconds
+     * @param difficulty the difficulty level
+     * @param questionTag the question tag
+     * @return the plot data map
+     */
     private Map<String, Object> createPlotData(String userId, String questionId, boolean correct, long timeTakenMillis,
             String difficulty, String questionTag) {
         Map<String, Object> data = new HashMap<>();
@@ -68,6 +99,12 @@ public class DataPlotter {
         return data;
     }
 
+    /**
+     * Saves the plot data to a JSON file.
+     *
+     * @param plotData the data to save
+     * @throws IOException if saving fails
+     */
     private void savePlotData(Map<String, Object> plotData) throws IOException {
         String userId = (String) plotData.get("user_id");
         String questionId = (String) plotData.get("id");

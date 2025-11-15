@@ -1,4 +1,8 @@
 package org.vaadin.numerosity.Subsystems;
+/**
+ * Placeholder or example class for handling user responses to questions.
+ * This class is commented out and not currently used.
+ */
 // // ResponseHandler.java  (Adjust constructor)
 // package org.vaadin.numerosity.Subsystems;
 

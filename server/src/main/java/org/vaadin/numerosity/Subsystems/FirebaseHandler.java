@@ -7,14 +7,29 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 
+/**
+ * Handler class for initializing Firebase with custom database URL and credentials.
+ */
 public class FirebaseHandler {
+    /** The database URL for Firebase. */
     private String databaseUrl;
+    /** The path to the Firebase credentials key file. */
     private String pathToKey;
 
+    /**
+     * Constructor that sets the database URL.
+     *
+     * @param databaseUrl the Firebase database URL
+     */
     public FirebaseHandler(String databaseUrl) {
         this.databaseUrl = databaseUrl;
     }
 
+    /**
+     * Initializes Firebase with the provided credentials and database URL.
+     *
+     * @throws IOException if the credentials file cannot be read
+     */
     public void initialize() throws IOException {
         FileInputStream serviceAccount = new FileInputStream(pathToKey); // Use pathToKey
         FirebaseOptions options = FirebaseOptions.builder()
@@ -24,10 +39,20 @@ public class FirebaseHandler {
         FirebaseApp.initializeApp(options);
     }
 
+    /**
+     * Sets the path to the Firebase credentials key file.
+     *
+     * @param pathToKey the path to the key file
+     */
     public void setPathToKey(String pathToKey) {
         this.pathToKey = pathToKey;
     }
 
+    /**
+     * Main method for testing Firebase initialization.
+     *
+     * @param args command line arguments
+     */
     public static void main(String[] args) {
         try {
             FirebaseHandler firebaseHandler = new FirebaseHandler("https://numerosity-583f5.firebaseio.com");
