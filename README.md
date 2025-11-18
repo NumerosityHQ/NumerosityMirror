@@ -96,77 +96,6 @@ This section lists all public methods in the server codebase.
   **Definition:** Toggles the visibility of the explanation section.
   **Usage Scenario:** Enables users to view or hide explanations for questions.
 
-### org.vaadin.numerosity.Featureset.MathEngine
-
-#### AlgebraOne
-- `public static double solveLinear(double a, double b)`
-  **Definition:** Solves the linear equation ax + b = 0 for x. Returns -b/a if a != 0, otherwise NaN.
-  **Usage Scenario:** Used to find the root of a linear equation, e.g., for 2x - 4 = 0, call solveLinear(2, -4) returns 2.0.
-
-- `public static double evaluateQuadratic(double a, double b, double c, double x)`
-  **Definition:** Evaluates the quadratic expression a*x^2 + b*x + c at the given x value.
-  **Usage Scenario:** To compute the y-value of a quadratic function at a point, e.g., for x^2 + 2x + 3 at x=4, call evaluateQuadratic(1, 2, 3, 4) returns 23.0.
-
-- `public static double findSlope(double x1, double y1, double x2, double y2)`
-  **Definition:** Calculates the slope (m) between two points (x1, y1) and (x2, y2) using (y2 - y1)/(x2 - x1).
-  **Usage Scenario:** Determines the steepness of a line between two points, e.g., between (0,0) and (1,1), call findSlope(0, 0, 1, 1) returns 1.0.
-
-#### AlgebraTwo
-- `public static double[] solveQuadratic(double a, double b, double c)`
-  **Definition:** Solves the quadratic equation ax^2 + bx + c = 0 and returns an array of real roots. Returns empty array if discriminant < 0.
-  **Usage Scenario:** Finds roots of quadratic equations, e.g., for x^2 - 3x + 2 = 0, call solveQuadratic(1, -3, 2) returns [2.0, 1.0].
-
-- `public static double evaluateExponential(double base, double exponent)`
-  **Definition:** Computes base raised to the power of exponent.
-  **Usage Scenario:** Calculates exponential values, e.g., 2^3, call evaluateExponential(2, 3) returns 8.0.
-
-- `public static double logBaseN(double value, double base)`
-  **Definition:** Computes the logarithm of value with the given base.
-  **Usage Scenario:** Finds logarithms in different bases, e.g., log2(8), call logBaseN(8, 2) returns 3.0.
-
-#### Calculus
-- `public static double derivativeAtPoint(double a, double b, double c, double x)`
-  **Definition:** Computes the derivative of the quadratic function ax^2 + bx + c at point x, which is 2ax + b.
-  **Usage Scenario:** Finds the instantaneous rate of change, e.g., derivative of x^2 + 2x + 3 at x=4, call derivativeAtPoint(1, 2, 3, 4) returns 10.0.
-
-- `public static double definiteIntegral(double a, double b, double c, double lower, double upper)`
-  **Definition:** Calculates the definite integral of ax^2 + bx + c from lower to upper bounds.
-  **Usage Scenario:** Computes area under a curve, e.g., integral of x^2 + 2x + 3 from 0 to 1, call definiteIntegral(1, 2, 3, 0, 1) returns the area value.
-
-- `public static double limitApproaching(double a, double b, double c, double x)`
-  **Definition:** Evaluates the quadratic function ax^2 + bx + c as x approaches the given value.
-  **Usage Scenario:** Approximates function values near a point, e.g., limit of x^2 + 2x + 3 as x->5, call limitApproaching(1, 2, 3, 5) returns 38.0.
-
-#### Geometry
-- `public static double areaOfTriangle(double base, double height)`
-  **Definition:** Calculates the area of a triangle using (1/2) * base * height.
-  **Usage Scenario:** Finds triangle area, e.g., for base=4, height=5, call areaOfTriangle(4, 5) returns 10.0.
-
-- `public static double circumferenceOfCircle(double radius)`
-  **Definition:** Computes the circumference of a circle using 2 * π * radius.
-  **Usage Scenario:** Calculates circle perimeter, e.g., for radius=3, call circumferenceOfCircle(3) returns approximately 18.84.
-
-- `public static double distanceBetweenPoints(double x1, double y1, double x2, double y2)`
-  **Definition:** Finds the Euclidean distance between two points.
-  **Usage Scenario:** Measures straight-line distance, e.g., between (0,0) and (3,4), call distanceBetweenPoints(0, 0, 3, 4) returns 5.0.
-
-#### Precalculus
-- `public static double sine(double angle)`
-  **Definition:** Computes the sine of an angle given in degrees.
-  **Usage Scenario:** Trigonometric calculations, e.g., sin(30°), call sine(30) returns 0.5.
-
-- `public static double cosine(double angle)`
-  **Definition:** Computes the cosine of an angle given in degrees.
-  **Usage Scenario:** Trigonometric calculations, e.g., cos(60°), call cosine(60) returns 0.5.
-
-- `public static double tangent(double angle)`
-  **Definition:** Computes the tangent of an angle given in degrees.
-  **Usage Scenario:** Trigonometric calculations, e.g., tan(45°), call tangent(45) returns 1.0.
-
-- `public static double factorial(int n)`
-  **Definition:** Calculates the factorial of n using recursion (n!).
-  **Usage Scenario:** Combinatorial calculations, e.g., 5!, call factorial(5) returns 120.0.
-
 ### org.vaadin.numerosity.Featureset.Supporter
 
 #### OptionButton
@@ -582,6 +511,78 @@ This section lists all public methods in the server codebase.
 - `public void saveUserAnswers(Map<String, Object> userAnswers)`
   **Definition:** Saves user's answer data.
   **Usage Scenario:** Persists quiz results.
+
+### org.vaadin.numerosity.Featureset.MathEngine
+
+#### AlgebraOne
+- `public static double solveLinear(double a, double b)`
+  **Definition:** Solves the linear equation ax + b = 0 for x. Returns -b/a if a != 0, otherwise NaN.
+  **Usage Scenario:** Used to find the root of a linear equation, e.g., for 2x - 4 = 0, call solveLinear(2, -4) returns 2.0.
+
+- `public static double evaluateQuadratic(double a, double b, double c, double x)`
+  **Definition:** Evaluates the quadratic expression a*x^2 + b*x + c at the given x value.
+  **Usage Scenario:** To compute the y-value of a quadratic function at a point, e.g., for x^2 + 2x + 3 at x=4, call evaluateQuadratic(1, 2, 3, 4) returns 23.0.
+
+- `public static double findSlope(double x1, double y1, double x2, double y2)`
+  **Definition:** Calculates the slope (m) between two points (x1, y1) and (x2, y2) using (y2 - y1)/(x2 - x1).
+  **Usage Scenario:** Determines the steepness of a line between two points, e.g., between (0,0) and (1,1), call findSlope(0, 0, 1, 1) returns 1.0.
+
+#### AlgebraTwo
+- `public static double[] solveQuadratic(double a, double b, double c)`
+  **Definition:** Solves the quadratic equation ax^2 + bx + c = 0 and returns an array of real roots. Returns empty array if discriminant < 0.
+  **Usage Scenario:** Finds roots of quadratic equations, e.g., for x^2 - 3x + 2 = 0, call solveQuadratic(1, -3, 2) returns [2.0, 1.0].
+
+- `public static double evaluateExponential(double base, double exponent)`
+  **Definition:** Computes base raised to the power of exponent.
+  **Usage Scenario:** Calculates exponential values, e.g., 2^3, call evaluateExponential(2, 3) returns 8.0.
+
+- `public static double logBaseN(double value, double base)`
+  **Definition:** Computes the logarithm of value with the given base.
+  **Usage Scenario:** Finds logarithms in different bases, e.g., log2(8), call logBaseN(8, 2) returns 3.0.
+
+#### Calculus
+- `public static double derivativeAtPoint(double a, double b, double c, double x)`
+  **Definition:** Computes the derivative of the quadratic function ax^2 + bx + c at point x, which is 2ax + b.
+  **Usage Scenario:** Finds the instantaneous rate of change, e.g., derivative of x^2 + 2x + 3 at x=4, call derivativeAtPoint(1, 2, 3, 4) returns 10.0.
+
+- `public static double definiteIntegral(double a, double b, double c, double lower, double upper)`
+  **Definition:** Calculates the definite integral of ax^2 + bx + c from lower to upper bounds.
+  **Usage Scenario:** Computes area under a curve, e.g., integral of x^2 + 2x + 3 from 0 to 1, call definiteIntegral(1, 2, 3, 0, 1) returns the area value.
+
+- `public static double limitApproaching(double a, double b, double c, double x)`
+  **Definition:** Evaluates the quadratic function ax^2 + bx + c as x approaches the given value.
+  **Usage Scenario:** Approximates function values near a point, e.g., limit of x^2 + 2x + 3 as x->5, call limitApproaching(1, 2, 3, 5) returns 38.0.
+
+#### Geometry
+- `public static double areaOfTriangle(double base, double height)`
+  **Definition:** Calculates the area of a triangle using (1/2) * base * height.
+  **Usage Scenario:** Finds triangle area, e.g., for base=4, height=5, call areaOfTriangle(4, 5) returns 10.0.
+
+- `public static double circumferenceOfCircle(double radius)`
+  **Definition:** Computes the circumference of a circle using 2 * π * radius.
+  **Usage Scenario:** Calculates circle perimeter, e.g., for radius=3, call circumferenceOfCircle(3) returns approximately 18.84.
+
+- `public static double distanceBetweenPoints(double x1, double y1, double x2, double y2)`
+  **Definition:** Finds the Euclidean distance between two points.
+  **Usage Scenario:** Measures straight-line distance, e.g., between (0,0) and (3,4), call distanceBetweenPoints(0, 0, 3, 4) returns 5.0.
+
+#### Precalculus
+- `public static double sine(double angle)`
+  **Definition:** Computes the sine of an angle given in degrees.
+  **Usage Scenario:** Trigonometric calculations, e.g., sin(30°), call sine(30) returns 0.5.
+
+- `public static double cosine(double angle)`
+  **Definition:** Computes the cosine of an angle given in degrees.
+  **Usage Scenario:** Trigonometric calculations, e.g., cos(60°), call cosine(60) returns 0.5.
+
+- `public static double tangent(double angle)`
+  **Definition:** Computes the tangent of an angle given in degrees.
+  **Usage Scenario:** Trigonometric calculations, e.g., tan(45°), call tangent(45) returns 1.0.
+
+- `public static double factorial(int n)`
+  **Definition:** Calculates the factorial of n using recursion (n!).
+  **Usage Scenario:** Combinatorial calculations, e.g., 5!, call factorial(5) returns 120.0.
+
 
 
 
