@@ -3,6 +3,9 @@
 ## Development - Alpha Stage
 The current codebase is messy, half implemented, and **will** break. We strongly advise you to **not** use the application or implement it in your program yet. Feel free to tinker with the existing project and contribute though!
 
+## Branches - Prod
+Please check our the Prod branch for the latest updates. The main branch is only for stable pushes.
+
 ## Codebase
 We are working under a tight timeframe and we hope to build and clean up once we get to the alpha release.
 
