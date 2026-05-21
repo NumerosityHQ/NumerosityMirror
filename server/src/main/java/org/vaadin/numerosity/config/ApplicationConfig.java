@@ -1,13 +1,14 @@
 package org.vaadin.numerosity.config;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -23,9 +24,14 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.cloud.FirestoreClient;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Configuration
 @EnableWebMvc
 public class ApplicationConfig {
+
+    private static final Logger log = LoggerFactory.getLogger(ApplicationConfig.class);
 
     @Value("${firebase.project.id}")
     private String projectId;
@@ -33,22 +39,67 @@ public class ApplicationConfig {
     @Value("${firebase.credentials.path}")
     private String credentialsPath;
 
+    /**
+     * Required for {@code @Value} injection to work when {@link EnableWebMvc}
+     * is present (it disables the Boot auto-configured placeholder configurer).
+     */
     @Bean
-    public Firestore getFirestore() {
+    public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
+        return new PropertySourcesPlaceholderConfigurer();
+    }
+
+    /**
+     * Builds a Firestore instance from the service-account JSON on the classpath.
+     * <p>
+     * If the credentials file is missing or contains invalid data the exception is
+     * caught and {@code null} is returned so that the rest of the application can
+     * still start. Features that need Firestore will fail at the point of use,
+     * not at application boot.
+     */
+    @Bean
+    @Lazy
+    public Firestore firestore() {
+        // Guard against @Value not resolving (e.g. missing property)
+        if (credentialsPath == null || credentialsPath.isBlank()) {
+            log.warn("Property 'firebase.credentials.path' is not set. "
+                    + "Firestore features will be unavailable.");
+            return null;
+        }
+
         try {
-            InputStream inStream = this.getClass().getClassLoader().getResourceAsStream(credentialsPath);
-            GoogleCredentials credentials = GoogleCredentials.fromStream(inStream);
-            FirestoreOptions firestoreOptions = FirestoreOptions.getDefaultInstance().toBuilder()
+            InputStream serviceAccount = this.getClass().getClassLoader().getResourceAsStream(credentialsPath);
+            if (serviceAccount == null) {
+                log.warn("Firebase credentials file '{}' not found on classpath. "
+                        + "Firestore features will be unavailable until a valid service-account "
+                        + "JSON is placed at src/main/resources/{}.",
+                        credentialsPath, credentialsPath);
+                return null;
+            }
+
+            FirebaseOptions options = FirebaseOptions.builder()
+                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
                     .setProjectId(projectId)
-                    .setCredentials(credentials)
                     .build();
-            return firestoreOptions.getService();
+
+            FirebaseApp firebaseApp = FirebaseApp.initializeApp(options);
+            Firestore fs = FirestoreClient.getFirestore(firebaseApp);
+            log.info("Firestore initialised successfully for project '{}'.", projectId);
+            return fs;
         } catch (IOException e) {
-            throw new RuntimeException("Exception while initializing Firestore", e);
+            log.warn("Could not initialise Firestore – invalid or missing credentials in '{}'. "
+                    + "Firestore features will be unavailable. Error: {}", credentialsPath, e.getMessage());
+            return null;
         }
     }
 
+    /**
+     * Only register the Firestore-backed repository when a valid Firestore instance
+     * is available. When {@code firestore} is {@code null} (bad / missing credentials)
+     * this bean is simply omitted from the context.
+     */
     @Bean
+    @Lazy
+    @Conditional(FirestoreAvailableCondition.class)
     public UserRepository userRepository(Firestore firestore) {
         return new FsUserRepository(firestore);
     }
@@ -61,19 +112,6 @@ public class ApplicationConfig {
     @Bean
     public UserManager userManager(PasswordEncoder passwordEncoder) {
         return new UserManager(passwordEncoder);
-    }
-
-    @Bean
-    public Firestore firestore() throws IOException {
-        FileInputStream serviceAccount = new FileInputStream("src/main/resources/Firebase.json");
-
-        FirebaseOptions options = FirebaseOptions.builder()
-                .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                .setDatabaseUrl("https://numerosity-583f5.firebaseio.com")
-                .build();
-
-        FirebaseApp firebaseApp = FirebaseApp.initializeApp(options);
-        return FirestoreClient.getFirestore(firebaseApp);
     }
 
     @Bean

@@ -1,0 +1,25 @@
+package org.vaadin.numerosity.config;
+
+import org.springframework.context.annotation.Condition;
+import org.springframework.context.annotation.ConditionContext;
+import org.springframework.core.type.AnnotatedTypeMetadata;
+
+/**
+ * Condition that matches only when a bean named {@code firestore} exists
+ * in the context and its value is non-null.
+ *
+ * <p>Used to guard the {@code userRepository} bean so it is only registered
+ * when the Firestore client was successfully initialised.</p>
+ */
+public class FirestoreAvailableCondition implements Condition {
+
+    @Override
+    public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
+        try {
+            Object bean = context.getBeanFactory().getBean("firestore");
+            return bean != null;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+}

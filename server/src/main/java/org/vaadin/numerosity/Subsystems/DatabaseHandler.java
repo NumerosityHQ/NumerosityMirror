@@ -5,8 +5,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+import org.springframework.context.annotation.Conditional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Service;
 
 import com.google.cloud.firestore.DocumentReference;
@@ -23,6 +25,7 @@ import com.google.firebase.cloud.FirestoreClient;
  * Manages user documents, statistics, question data, and user information storage and retrieval.
  */
 @Service
+@Conditional(org.vaadin.numerosity.config.FirestoreAvailableCondition.class)
 public class DatabaseHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(DatabaseHandler.class);
@@ -37,6 +40,7 @@ public class DatabaseHandler {
      */
     public DatabaseHandler(Firestore firestore) {
         this.firestore = firestore;
+        this.dbFirestore = firestore;
     }
 
     /**
@@ -114,6 +118,7 @@ public class DatabaseHandler {
         }
     }
 
+
     /**
      * Checks if a user document exists in Firestore.
      *
@@ -121,11 +126,16 @@ public class DatabaseHandler {
      * @return true if the user exists, false otherwise
      */
     public boolean userExists(String userId) {
+        if (userId == null || userId.trim().isEmpty()) {
+            logger.error("User ID cannot be null or empty in userExists check");
+            return false;
+        }
         DocumentReference docRef = firestore.collection("users").document(userId);
         try {
             return docRef.get().get().exists();
         } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException("Error checking user existence", e);
+            logger.error("Error checking user existence for userId {}: {}", userId, e.getMessage());
+            return false;
         }
     }
 
@@ -170,11 +180,6 @@ public class DatabaseHandler {
         }
     }
 
-    
-
-    
-
-
     /**
      * Increments the correct answer count for the current user.
      */
@@ -197,10 +202,8 @@ public class DatabaseHandler {
         }
     }
 
-
-
     /** Alternative Firestore instance for additional operations. */
-    private Firestore dbFirestore = FirestoreClient.getFirestore();
+    private final Firestore dbFirestore;
 
     /**
      * Saves user information to Firestore.
@@ -359,5 +362,4 @@ public class DatabaseHandler {
         }
     }
 
-    
 }

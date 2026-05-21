@@ -3,6 +3,8 @@ package org.vaadin.numerosity;
 import org.vaadin.numerosity.Featureset.AppFunctions.bank;
 import org.vaadin.numerosity.Featureset.AppFunctions.rush;
 import org.vaadin.numerosity.Featureset.AppFunctions.zen;
+import org.vaadin.numerosity.Subsystems.LoginHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -18,9 +20,8 @@ import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.component.notification.Notification;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthException;
-import com.google.firebase.auth.UserRecord;
+import java.util.concurrent.ExecutionException;
+import java.lang.InterruptedException;
 
 /**
  * Main view of the Vaadin application, serving as the home page.
@@ -29,12 +30,8 @@ import com.google.firebase.auth.UserRecord;
 @Route("")
 public class MainView extends VerticalLayout {
 
-    /** Firebase Auth instance. */
-    private FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
-    /** The last created user record. */
-    public static UserRecord createdUser = null; // Initialize userRecord to null
-    /** The current user's email. */
-    public String userEmail = null;
+    @Autowired
+    private LoginHandler loginHandler;
 
     /**
      * Constructor that sets up the UI components for the main view.
@@ -59,35 +56,42 @@ public class MainView extends VerticalLayout {
             dialogLayout.add(emailField, passwordField);
 
             Button loginSubmitButton = new Button("Login", e -> {
+                String email = emailField.getValue();
+                String password = passwordField.getValue();
                 try {
-                    UserRecord userRecord = firebaseAuth.getUserByEmail(emailField.getValue());
-                    userEmail = emailField.getValue();
-                    // Add your password verification logic here
-                    Notification.show("Login successful! Welcome, " + userRecord.getEmail());
-                    dialog.close();
-                } catch (FirebaseAuthException ex) {
+                    String result = loginHandler.login(email, password);
+                    if (result.startsWith("Login failed")) {
+                        Notification.show(result);
+                    } else {
+                        Notification.show("Login successful! Welcome, " + email);
+                        dialog.close();
+                    }
+                } catch (ExecutionException | InterruptedException ex) {
                     Notification.show("Login failed: " + ex.getMessage());
                 }
             });
             dialogLayout.add(loginSubmitButton);
             
+            
 
             Button signupSubmitButton = new Button("Signup", e -> {
-                UserRecord.CreateRequest request = new UserRecord.CreateRequest()
-                        .setEmail(emailField.getValue())
-                        .setPassword(passwordField.getValue());
+                String email = emailField.getValue();
+                String password = passwordField.getValue();
                 try {
-                    UserRecord userRecord = firebaseAuth.createUser(request);
-                    createdUser = userRecord;
-                    Notification.show("Signup successful! User ID: " + userRecord.getUid());
-                } catch (FirebaseAuthException ex) {
+                    String result = loginHandler.signup(email, password);
+                    if (result.startsWith("Signup failed")) {
+                        Notification.show(result);
+                    } else {
+                        Notification.show("Signup successful! " + result);
+                        dialog.close();
+                    }
+                } catch (ExecutionException | InterruptedException ex) {
                     Notification.show("Signup failed: " + ex.getMessage());
                 }
-                dialog.close();
             });
 
             
-
+            
             dialogLayout.add(signupSubmitButton);
 
             dialog.add(dialogLayout);

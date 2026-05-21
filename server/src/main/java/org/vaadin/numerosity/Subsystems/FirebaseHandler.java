@@ -29,8 +29,12 @@ public class FirebaseHandler {
      * Initializes Firebase with the provided credentials and database URL.
      *
      * @throws IOException if the credentials file cannot be read
+     * @throws IllegalStateException if pathToKey has not been set
      */
     public void initialize() throws IOException {
+        if (pathToKey == null || pathToKey.isEmpty()) {
+            throw new IllegalStateException("Path to Firebase credentials key file must be set before initialization");
+        }
         FileInputStream serviceAccount = new FileInputStream(pathToKey); // Use pathToKey
         FirebaseOptions options = FirebaseOptions.builder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccount))
