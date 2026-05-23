@@ -14,12 +14,14 @@ import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.FieldValue;
 import com.google.cloud.firestore.Firestore;
 
-
+/**
+ * Firestore implementation of UserRepository.
+ */
 public class FsUserRepository implements UserRepository {
 
     private final Firestore firestore;
 
-    public FsUserRepository(Firestore firestoneClient) { // was Firestore firestoneClient
+    public FsUserRepository(Firestore firestoneClient) {
         this.firestore = firestoneClient;
     }
 
@@ -34,17 +36,15 @@ public class FsUserRepository implements UserRepository {
         userData.put("answered", 0);
         userData.put("unattempted", 0);
         try {
-         docRef.set(userData).get();
-        }  catch (InterruptedException | ExecutionException e) {
+            docRef.set(userData).get();
+        } catch (InterruptedException | ExecutionException e) {
             throw new DbException("Exception while creating user", e);
         }
     }
 
-
     @Override
     public void incrementCorrect(String userId) {
         updateStatistic(userId, "correct", 1);
-
     }
 
     @Override
@@ -52,15 +52,13 @@ public class FsUserRepository implements UserRepository {
         updateStatistic(userId, "wrong", 1);
     }
 
-
-    
     private void updateStatistic(String userId, String field, int delta) {
         DocumentReference docRef = firestore.collection("users").document(userId);
         Map<String, Object> updates = new HashMap<>();
         updates.put(field, FieldValue.increment(delta));
         try {
-             docRef.update(updates).get();
-        }  catch (InterruptedException | ExecutionException e) {
+            docRef.update(updates).get();
+        } catch (InterruptedException | ExecutionException e) {
             throw new DbException("Exception while updating statistic ", e);
         }
     }
@@ -84,7 +82,7 @@ public class FsUserRepository implements UserRepository {
 
     @Override
     public boolean userExists(String userId) {
-         DocumentReference docRef = firestore.collection("users").document(userId);
+        DocumentReference docRef = firestore.collection("users").document(userId);
         ApiFuture<DocumentSnapshot> future = docRef.get();
 
         try {
@@ -94,5 +92,4 @@ public class FsUserRepository implements UserRepository {
             throw new DbException("Exception while checking user existence", e);
         }
     }
-    
 }

@@ -5,6 +5,9 @@ import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Service;
 import org.vaadin.numerosity.repository.UserRepository;
 
+/**
+ * Service class for user operations.
+ */
 @Service
 @Conditional(org.vaadin.numerosity.config.FirestoreAvailableCondition.class)
 public class UserService {
@@ -18,5 +21,4 @@ public class UserService {
     public void createUser(String userId, String username) {
         userRepository.createUserDocument(userId, username);
     }
-
 }

@@ -5,11 +5,8 @@ import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 
 /**
- * Condition that matches only when a bean named {@code firestore} exists
+ * Condition that matches only when a bean named firestore exists
  * in the context and its value is non-null.
- *
- * <p>Used to guard the {@code userRepository} bean so it is only registered
- * when the Firestore client was successfully initialised.</p>
  */
 public class FirestoreAvailableCondition implements Condition {
 

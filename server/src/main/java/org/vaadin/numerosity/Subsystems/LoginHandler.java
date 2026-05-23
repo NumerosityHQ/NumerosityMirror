@@ -14,25 +14,17 @@ import com.google.firebase.auth.UserRecord;
 
 /**
  * Service class for handling user authentication via Firebase Auth.
- * Manages signup, login, and logout operations.
  */
 @Service
 public class LoginHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(LoginHandler.class);
-    
-    /** Injected DatabaseHandler for user data operations. */
+
     @Autowired(required = false)
     private DatabaseHandler databaseHandler;
 
-    /** Firebase Auth instance, lazily initialized. */
     private FirebaseAuth firebaseAuth;
 
-    /**
-     * Gets the FirebaseAuth instance, initializing it lazily.
-     *
-     * @return the FirebaseAuth instance
-     */
     private FirebaseAuth getFirebaseAuth() {
         if (firebaseAuth == null) {
             firebaseAuth = FirebaseAuth.getInstance();
@@ -40,17 +32,7 @@ public class LoginHandler {
         return firebaseAuth;
     }
 
-    /**
-     * Signs up a new user with the given email and password.
-     *
-     * @param email the user's email
-     * @param password the user's password
-     * @return success message or error message
-     * @throws ExecutionException if database operation fails
-     * @throws InterruptedException if database operation is interrupted
-     */
     public String signup(String email, String password) throws ExecutionException, InterruptedException {
-        // Validate input
         if (email == null || email.trim().isEmpty()) {
             logger.error("Email cannot be null or empty");
             return "Signup failed: Email cannot be null or empty";
@@ -66,7 +48,6 @@ public class LoginHandler {
                     .setPassword(password.trim()));
             String userId = userRecord.getUid();
 
-            // Ensure user exists in Firestore (if databaseHandler is available)
             if (databaseHandler != null) {
                 if (!databaseHandler.userExists(userId)) {
                     databaseHandler.createUserDocument(userId, email.trim());
@@ -80,18 +61,8 @@ public class LoginHandler {
             return "Signup failed: " + e.getMessage();
         }
     }
-    
-    /**
-     * Logs in a user with the given email and password.
-     *
-     * @param email the user's email
-     * @param password the user's password
-     * @return custom token or error message
-     * @throws ExecutionException if database operation fails
-     * @throws InterruptedException if database operation is interrupted
-     */
+
     public String login(String email, String password) throws ExecutionException, InterruptedException {
-        // Validate input
         if (email == null || email.trim().isEmpty()) {
             logger.error("Email cannot be null or empty");
             return "Login failed: Email cannot be null or empty";
@@ -105,7 +76,6 @@ public class LoginHandler {
             UserRecord userRecord = getFirebaseAuth().getUserByEmail(email.trim());
             String userId = userRecord.getUid();
 
-            // Ensure user exists in Firestore (if databaseHandler is available)
             if (databaseHandler != null) {
                 if (!databaseHandler.userExists(userId)) {
                     databaseHandler.createUserDocument(userId, email.trim());
@@ -120,14 +90,7 @@ public class LoginHandler {
         }
     }
 
-    /**
-     * Logs out a user by revoking their refresh tokens.
-     *
-     * @param idToken the user's ID token
-     * @return true if logout successful, false otherwise
-     */
     public boolean logout(String idToken) {
-        // Validate input
         if (idToken == null || idToken.trim().isEmpty()) {
             logger.error("ID token cannot be null or empty");
             return false;

@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 
 /**
  * Service class for handling user responses to questions.
- * Validates answers, updates statistics, and plots data for analytics.
  */
 @Service
 @Conditional(org.vaadin.numerosity.config.FirestoreAvailableCondition.class)
@@ -30,17 +29,7 @@ public class ResponseHandler {
         this.dataPlotter = dataPlotter;
     }
 
-    /**
-     * Handles a user's response to a question.
-     * 
-     * @param questionId the ID of the question being answered
-     * @param userAnswer the user's answer
-     * @param difficulty the difficulty level of the question
-     * @param subject the subject of the question
-     * @return ResponseResult containing correctness and time taken
-     */
     public ResponseResult handleResponse(String questionId, String userAnswer, String difficulty, String subject) {
-        // Validate input
         if (questionId == null || questionId.trim().isEmpty()) {
             logger.error("Question ID cannot be null or empty");
             return new ResponseResult(false, 0L);
@@ -55,38 +44,27 @@ public class ResponseHandler {
         Instant endTime = Instant.now();
         long timeTakenMillis = Duration.between(startTime, endTime).toMillis();
 
-        // Update statistics in Firestore
         try {
             if (isCorrect) {
                 dbHandler.incrementCorrect();
             } else {
                 dbHandler.incrementWrong();
             }
-            
-            // Save question attempt data
+
             dbHandler.saveQuestionData(questionId, userId, userAnswer, isCorrect);
-            
-            // Plot data for analytics
+
             dataPlotter.plotData(userId, questionId, isCorrect, timeTakenMillis, difficulty, subject);
-            
-            logger.info("Response handled for user {} on question {}: correct={}, time={}ms", 
-                       userId, questionId, isCorrect, timeTakenMillis);
+
+            logger.info("Response handled for user {} on question {}: correct={}, time={}ms",
+                    userId, questionId, isCorrect, timeTakenMillis);
         } catch (Exception e) {
-            logger.error("Error handling response for user {} on question {}: {}", 
-                        userId, questionId, e.getMessage(), e);
-            // Continue to return result even if database operations fail
+            logger.error("Error handling response for user {} on question {}: {}",
+                    userId, questionId, e.getMessage(), e);
         }
 
         return new ResponseResult(isCorrect, timeTakenMillis);
     }
 
-    /**
-     * Validates the user's answer against the correct answer from the database.
-     * 
-     * @param questionId the ID of the question
-     * @param userAnswer the user's answer
-     * @return true if the answer is correct, false otherwise
-     */
     private boolean validateAnswer(String questionId, String userAnswer) {
         try {
             Map<String, Object> question = localDbHandler.loadRandomQuestion();
@@ -103,11 +81,6 @@ public class ResponseHandler {
         }
     }
 
-    /**
-     * Sets the current user ID.
-     * 
-     * @param userId the user ID to set
-     */
     public void setUserId(String userId) {
         if (userId == null || userId.trim().isEmpty()) {
             logger.warn("Attempted to set null or empty user ID");
@@ -116,11 +89,6 @@ public class ResponseHandler {
         this.userId = userId.trim();
     }
 
-    /**
-     * Sets the current question ID.
-     * 
-     * @param questionId the question ID to set
-     */
     public void setQuestionId(String questionId) {
         if (questionId == null || questionId.trim().isEmpty()) {
             logger.warn("Attempted to set null or empty question ID");
@@ -129,9 +97,6 @@ public class ResponseHandler {
         this.questionId = questionId.trim();
     }
 
-    /**
-     * Inner class for encapsulating response results.
-     */
     public static class ResponseResult {
         private final boolean isCorrect;
         private final long timeTakenMillis;

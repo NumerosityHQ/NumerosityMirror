@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.vaadin.numerosity.service.UserService;
 
+/**
+ * REST controller for user operations.
+ */
 @RestController
 @Conditional(org.vaadin.numerosity.config.FirestoreAvailableCondition.class)
 @RequestMapping("/api/users")
@@ -26,7 +29,7 @@ public class UserRestController {
         if (userDTO == null || userDTO.getUserId() == null || userDTO.getUsername() == null) {
             return ResponseEntity.badRequest().body("User ID and username are required");
         }
-        
+
         try {
             userService.createUser(userDTO.getUserId(), userDTO.getUsername());
             return ResponseEntity.ok("User created successfully");
@@ -35,6 +38,4 @@ public class UserRestController {
                     .body("Error creating user: " + e.getMessage());
         }
     }
-
-    // Additional endpoints for user operations can be added here
 }

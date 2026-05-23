@@ -4,10 +4,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.vaadin.numerosity.MainView;
+import org.springframework.context.annotation.Conditional;
 import org.vaadin.numerosity.Subsystems.DatabaseHandler;
 import org.vaadin.numerosity.Subsystems.LocalDatabaseHandler;
 import org.vaadin.numerosity.Subsystems.QuestionContentLoader;
+import org.vaadin.numerosity.config.FirestoreAvailableCondition;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.vaadin.flow.component.button.Button;
@@ -33,29 +34,20 @@ public class rush extends VerticalLayout {
     /** Current score. */
     private int score = 0;
     /** The key of the correct answer. */
-    private String correctAnswerKey; // Store the key ("a", "b", "c", or "d") of the correct answer
+    private String correctAnswerKey;
 
     /** Injected QuestionContentLoader. */
     private final QuestionContentLoader questionLoader;
     /** Injected LocalDatabaseHandler. */
     private final LocalDatabaseHandler localDbHandler;
-    // private final DatabaseHandler databaseHandler;
     /** The selected answer key. */
-    String selectedAnswerKey = null;
+    private String selectedAnswerKey = null;
 
-    /** Firebase Auth instance. */
-    private FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+    // Firebase Auth instance - initialized via FirebaseInitializer
+    private FirebaseAuth firebaseAuth;
 
-    /** Injected DatabaseHandler. */
-    @Autowired
-    private DatabaseHandler firebaseDataHandler;
-
-    /** Injected MainView. */
-    @Autowired
-    private MainView mainView;
-
-    /** Injected DatabaseHandler. */
-    @Autowired
+    /** Injected DatabaseHandler - optional. */
+    @Autowired(required = false)
     private DatabaseHandler databaseHandler;
 
     /**
@@ -63,14 +55,10 @@ public class rush extends VerticalLayout {
      *
      * @param questionLoader the question content loader
      * @param localDbHandler the local database handler
-     * @param databaseHandler the database handler
-     * @throws Exception if initialization fails
      */
-    @Autowired
-    public rush(QuestionContentLoader questionLoader, LocalDatabaseHandler localDbHandler, DatabaseHandler databaseHandler) throws Exception {
+    public rush(QuestionContentLoader questionLoader, LocalDatabaseHandler localDbHandler) {
         this.questionLoader = questionLoader;
         this.localDbHandler = localDbHandler;
-        this.databaseHandler = databaseHandler;
 
         setSizeFull();
 
@@ -130,21 +118,12 @@ public class rush extends VerticalLayout {
 
         } catch (Exception e) {
             questionDisplay.setText("Error loading question: " + e.getMessage());
-            e.printStackTrace(); // Log the error for debugging
+            e.printStackTrace();
         }
     }
 
-    // // Call these methods at appropriate places in your code, e.g., after a user
-    // answers a question
-    // databaseHandler.saveQuestionData(questionId, userId, answerId, isCorrect);
-    // databaseHandler.incrementCorrect(userId);
-    // databaseHandler.incrementWrong(userId);
-
-   // String userId = databaseHandler.getUserId();
-
     private void handleAnswer(int index) throws Exception {
         // Determine which button was pressed to answer
-
         switch (index) {
             case 0:
                 selectedAnswerKey = "a";
@@ -163,23 +142,11 @@ public class rush extends VerticalLayout {
         // Check if the answer is correct and update score
         if (selectedAnswerKey.equals(correctAnswerKey)) {
             score++;
-          //  databaseHandler.incrementCorrect(userId);
             scoreDisplay.setText("Score: " + score);
             Notification.show("Correct!");
         } else {
-          //  databaseHandler.incrementWrong(userId);
             Notification.show("Incorrect!");
         }
-
-        // Save user answers
-        Map<String, Object> userAnswers = new HashMap<>();
-        userAnswers.put("question", questionDisplay.getText());
-        userAnswers.put("selectedAnswer", selectedAnswerKey);
-        userAnswers.put("correctAnswer", correctAnswerKey);
-
-        // log answer first
-        // databaseHandler.saveQuestionData(questionLoader.getCurrentQuestionId(), userId, selectedAnswerKey,
-        //         selectedAnswerKey.equals(correctAnswerKey));
 
         // Load next question
         loadQuestion();

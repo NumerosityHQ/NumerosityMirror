@@ -19,7 +19,6 @@ import org.vaadin.numerosity.repository.UserRepository;
 
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.FirestoreOptions;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.cloud.FirestoreClient;
@@ -27,6 +26,9 @@ import com.google.firebase.cloud.FirestoreClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Configuration class for Firebase and application beans.
+ */
 @Configuration
 @EnableWebMvc
 public class ApplicationConfig {
@@ -39,27 +41,14 @@ public class ApplicationConfig {
     @Value("${firebase.credentials.path}")
     private String credentialsPath;
 
-    /**
-     * Required for {@code @Value} injection to work when {@link EnableWebMvc}
-     * is present (it disables the Boot auto-configured placeholder configurer).
-     */
     @Bean
     public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
         return new PropertySourcesPlaceholderConfigurer();
     }
 
-    /**
-     * Builds a Firestore instance from the service-account JSON on the classpath.
-     * <p>
-     * If the credentials file is missing or contains invalid data the exception is
-     * caught and {@code null} is returned so that the rest of the application can
-     * still start. Features that need Firestore will fail at the point of use,
-     * not at application boot.
-     */
     @Bean
     @Lazy
     public Firestore firestore() {
-        // Guard against @Value not resolving (e.g. missing property)
         if (credentialsPath == null || credentialsPath.isBlank()) {
             log.warn("Property 'firebase.credentials.path' is not set. "
                     + "Firestore features will be unavailable.");
@@ -92,11 +81,6 @@ public class ApplicationConfig {
         }
     }
 
-    /**
-     * Only register the Firestore-backed repository when a valid Firestore instance
-     * is available. When {@code firestore} is {@code null} (bad / missing credentials)
-     * this bean is simply omitted from the context.
-     */
     @Bean
     @Lazy
     @Conditional(FirestoreAvailableCondition.class)
