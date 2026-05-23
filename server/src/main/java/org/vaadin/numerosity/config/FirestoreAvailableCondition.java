@@ -14,7 +14,7 @@ public class FirestoreAvailableCondition implements Condition {
     public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
         try {
             Object bean = context.getBeanFactory().getBean("firestore");
-            return bean != null;
+            return bean != null && bean.getClass().getSimpleName().equals("Firestore");
         } catch (Exception e) {
             return false;
         }
