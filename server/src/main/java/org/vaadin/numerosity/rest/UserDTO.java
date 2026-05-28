@@ -1,10 +1,12 @@
 package org.vaadin.numerosity.rest;
 
+/**
+ * Data Transfer Object for user information in REST API operations.
+ */
 public class UserDTO {
 
     private String userId;
     private String username;
-    // Other relevant user data (e.g., email, password - use with caution)
 
     public String getUserId() {
         return userId;
@@ -21,6 +23,4 @@ public class UserDTO {
     public void setUsername(String username) {
         this.username = username;
     }
-
-    // Getters and setters for other fields
 }

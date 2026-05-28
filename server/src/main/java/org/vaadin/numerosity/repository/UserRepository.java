@@ -3,6 +3,9 @@ package org.vaadin.numerosity.repository;
 import java.util.Optional;
 import java.util.Map;
 
+/**
+ * Repository interface for user data operations.
+ */
 public interface UserRepository {
 
     void createUserDocument(String userId, String username);
@@ -11,7 +14,6 @@ public interface UserRepository {
 
     void incrementWrong(String userId);
 
-    // New methods for REST API
     Optional<Map<String, Object>> getUserStats(String userId);
 
     boolean userExists(String userId);

@@ -18,6 +18,9 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 
+/**
+ * Manager class for user operations.
+ */
 @Service
 public class UserManager {
     private static final Path BASE_DIR = Paths.get("Database", "UserData");
@@ -39,17 +42,14 @@ public class UserManager {
     }
 
     public String signup(String username, String password, String dob) throws IOException {
-        // Check if username exists
         if (isUsernameTaken(username)) {
             throw new IllegalArgumentException("Username already exists");
         }
 
-        // Create user directory
         String userId = UUID.randomUUID().toString();
         Path userDir = BASE_DIR.resolve(userId);
         Files.createDirectories(userDir);
 
-        // Create user info JSON
         UserInfo userInfo = new UserInfo(
                 userId,
                 dob,
@@ -57,7 +57,6 @@ public class UserManager {
                 passwordEncoder.encode(password));
         writeJson(userDir.resolve("user_info.json"), userInfo);
 
-        // Create empty answers JSON
         UserAnswer initialAnswer = new UserAnswer();
         writeJson(userDir.resolve("user_answers.json"), Collections.singletonList(initialAnswer));
 
@@ -82,7 +81,6 @@ public class UserManager {
         }
     }
 
-    // Getter methods
     public String getUserId(String username) throws IOException {
         return getUserInfo(username).id;
     }
@@ -134,7 +132,6 @@ public class UserManager {
         }
     }
 
-    // Data classes for JSON serialization
     private static class UserInfo {
         public String id;
         public String dob;
@@ -142,7 +139,7 @@ public class UserManager {
         public String password;
 
         public UserInfo() {
-        } // For Jackson
+        }
 
         public UserInfo(String id, String dob, String username, String password) {
             this.id = id;
@@ -162,7 +159,6 @@ public class UserManager {
     private static final String FILE_PATH = "user_answers.json";
     private Gson gson = new Gson();
 
-    // Method to save user answers to a JSON file
     public void saveUserAnswers(Map<String, Object> userAnswers) {
         try (FileWriter file = new FileWriter(FILE_PATH)) {
             gson.toJson(userAnswers, file);

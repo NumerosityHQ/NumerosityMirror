@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+import org.springframework.context.annotation.Conditional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -16,19 +17,23 @@ import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.WriteResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.UserRecord;
-import com.google.firebase.cloud.FirestoreClient;
 
+/**
+ * Service class for handling database operations with Firestore.
+ */
 @Service
+@Conditional(org.vaadin.numerosity.config.FirestoreAvailableCondition.class)
 public class DatabaseHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(DatabaseHandler.class);
     private final Firestore firestore;
     private String userId;
     private String username;
-
+    private final Firestore dbFirestore;
 
     public DatabaseHandler(Firestore firestore) {
         this.firestore = firestore;
+        this.dbFirestore = firestore;
     }
 
     public void createUserDocument(String userId, String username) throws ExecutionException, InterruptedException {
@@ -79,11 +84,16 @@ public class DatabaseHandler {
     }
 
     public boolean userExists(String userId) {
+        if (userId == null || userId.trim().isEmpty()) {
+            logger.error("User ID cannot be null or empty in userExists check");
+            return false;
+        }
         DocumentReference docRef = firestore.collection("users").document(userId);
         try {
             return docRef.get().get().exists();
         } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException("Error checking user existence", e);
+            logger.error("Error checking user existence for userId {}: {}", userId, e.getMessage());
+            return false;
         }
     }
 
@@ -114,11 +124,6 @@ public class DatabaseHandler {
         }
     }
 
-    
-
-    
-
-
     public void incrementCorrect() {
         try {
             updateStatistic(userId, "correct", 1);
@@ -135,11 +140,6 @@ public class DatabaseHandler {
         }
     }
 
-
-
-    private Firestore dbFirestore = FirestoreClient.getFirestore();
-
-    // Method to save user info
     public String saveUserInfo(String userId, Map<String, Object> userInfo) {
         DocumentReference documentReference = dbFirestore.collection("users").document(userId);
         try {
@@ -151,7 +151,6 @@ public class DatabaseHandler {
         }
     }
 
-    // Method to save answered problem data
     public String saveAnsweredProblem(String userId, String problemId, Map<String, Object> problemData) {
         DocumentReference documentReference = dbFirestore.collection("users").document(userId)
                 .collection("answeredProblems").document(problemId);
@@ -164,7 +163,6 @@ public class DatabaseHandler {
         }
     }
 
-    // Method to retrieve user info
     public Map<String, Object> getUserInfo(String userId) {
         DocumentReference documentReference = dbFirestore.collection("users").document(userId);
         try {
@@ -180,7 +178,6 @@ public class DatabaseHandler {
         }
     }
 
-    // Method to retrieve answered problem data
     public Map<String, Object> getAnsweredProblem(String userId, String problemId) {
         DocumentReference documentReference = dbFirestore.collection("users").document(userId)
                 .collection("answeredProblems").document(problemId);
@@ -236,6 +233,4 @@ public class DatabaseHandler {
             return null;
         }
     }
-
-    
 }
