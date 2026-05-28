@@ -1,11 +1,8 @@
-//  A class is needed to appropriately load text or latex content from questions
-//  Create a new class to do this in:
 package org.vaadin.numerosity.Subsystems;
 
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
-import org.vaadin.numerosity.Application;
 
 /**
  * Service class for loading question content from the local database.
@@ -13,9 +10,6 @@ import org.vaadin.numerosity.Application;
  */
 @Service
 public class QuestionContentLoader {
-
-    /** The application instance. */
-    private final Application application;
 
     /** The local database handler. */
     private final LocalDatabaseHandler localDbHandler;
@@ -26,11 +20,9 @@ public class QuestionContentLoader {
      * Constructor injecting dependencies.
      *
      * @param localDbHandler the local database handler
-     * @param application the application instance
      */
-    public QuestionContentLoader(LocalDatabaseHandler localDbHandler, Application application) {
+    public QuestionContentLoader(LocalDatabaseHandler localDbHandler) {
         this.localDbHandler = localDbHandler;
-        this.application = application;
     }
 
     /**
@@ -66,12 +58,11 @@ public class QuestionContentLoader {
      * Loads a specific question as text.
      *
      * @param questionId the question ID
-     * @param databasePath the database path
      * @return the question text
      * @throws Exception if loading fails
      */
-    public String loadAsText(String questionId, String databasePath) throws Exception {
-        Map<String, Object> question = localDbHandler.loadSpecificQuestion(questionId, databasePath);
+    public String loadAsText(String questionId) throws Exception {
+        Map<String, Object> question = localDbHandler.loadSpecificQuestion(questionId);
         chosenQuestionMap = question;
         if (!question.containsKey("text")) {
             throw new IllegalArgumentException("Question has no 'text' field");
@@ -83,17 +74,16 @@ public class QuestionContentLoader {
      * Loads a specific question as LaTeX.
      *
      * @param questionId the question ID
-     * @param databasePath the database path
      * @return the question LaTeX
      * @throws Exception if loading fails
      */
-    public String loadAsLatex(String questionId, String databasePath) throws Exception {
-        Map<String, Object> question = localDbHandler.loadSpecificQuestion(questionId, databasePath);
+    public String loadAsLatex(String questionId) throws Exception {
+        Map<String, Object> question = localDbHandler.loadSpecificQuestion(questionId);
         chosenQuestionMap = question;
-        if (!question.containsKey("text")) {
-            throw new IllegalArgumentException("Question has no 'text' field");
+        if (!question.containsKey("latex")) {
+            throw new IllegalArgumentException("Question has no 'latex' field");
         }
-        return question.get("text").toString();
+        return question.get("latex").toString();
     }
 
     /**

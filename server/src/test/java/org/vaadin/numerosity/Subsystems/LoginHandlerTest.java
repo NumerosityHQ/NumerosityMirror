@@ -1,20 +1,22 @@
 package org.vaadin.numerosity.Subsystems;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.test.util.ReflectionTestUtils;
 
-/**
- * Test class for LoginHandler.
- */
 class LoginHandlerTest {
 
     @Mock
     private DatabaseHandler databaseHandler;
+
+    @Mock
+    private UserManager userManager;
 
     @InjectMocks
     private LoginHandler loginHandler;
@@ -22,95 +24,103 @@ class LoginHandlerTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        ReflectionTestUtils.setField(loginHandler, "credentialsPath", "");
+        ReflectionTestUtils.setField(loginHandler, "projectId", "");
     }
 
     @Test
     void testSignupEmailNull() {
-        // Act
         String result = assertDoesNotThrow(() -> loginHandler.signup(null, "password123"));
 
-        // Assert
         assertEquals("Signup failed: Email cannot be null or empty", result);
     }
 
     @Test
     void testSignupEmailEmpty() {
-        // Act
         String result = assertDoesNotThrow(() -> loginHandler.signup("", "password123"));
 
-        // Assert
         assertEquals("Signup failed: Email cannot be null or empty", result);
     }
 
     @Test
     void testSignupPasswordNull() {
-        // Act
         String result = assertDoesNotThrow(() -> loginHandler.signup("test@example.com", null));
 
-        // Assert
         assertEquals("Signup failed: Password cannot be null or empty", result);
     }
 
     @Test
     void testSignupPasswordEmpty() {
-        // Act
         String result = assertDoesNotThrow(() -> loginHandler.signup("test@example.com", ""));
 
-        // Assert
         assertEquals("Signup failed: Password cannot be null or empty", result);
     }
 
     @Test
     void testLoginEmailNull() {
-        // Act
         String result = assertDoesNotThrow(() -> loginHandler.login(null, "password123"));
 
-        // Assert
         assertEquals("Login failed: Email cannot be null or empty", result);
     }
 
     @Test
     void testLoginEmailEmpty() {
-        // Act
         String result = assertDoesNotThrow(() -> loginHandler.login("", "password123"));
 
-        // Assert
         assertEquals("Login failed: Email cannot be null or empty", result);
     }
 
     @Test
     void testLoginPasswordNull() {
-        // Act
         String result = assertDoesNotThrow(() -> loginHandler.login("test@example.com", null));
 
-        // Assert
         assertEquals("Login failed: Password cannot be null or empty", result);
     }
 
     @Test
     void testLoginPasswordEmpty() {
-        // Act
         String result = assertDoesNotThrow(() -> loginHandler.login("test@example.com", ""));
 
-        // Assert
         assertEquals("Login failed: Password cannot be null or empty", result);
     }
 
     @Test
     void testLogoutNullToken() {
-        // Act
         boolean result = loginHandler.logout(null);
 
-        // Assert
         assertFalse(result);
     }
 
     @Test
     void testLogoutEmptyToken() {
-        // Act
         boolean result = loginHandler.logout("");
 
-        // Assert
         assertFalse(result);
+    }
+
+    @Test
+    void testDemoSignupUsesLocalUserManager() throws Exception {
+        when(userManager.signup("test@example.com", "password123", "demo")).thenReturn("local-user-id");
+
+        String result = assertDoesNotThrow(() -> loginHandler.signup("test@example.com", "password123"));
+
+        assertEquals("Signup successful! User ID: local-user-id", result);
+        verify(userManager).signup("test@example.com", "password123", "demo");
+    }
+
+    @Test
+    void testDemoLoginUsesLocalUserManager() throws Exception {
+        when(userManager.login("test@example.com", "password123")).thenReturn(true);
+
+        String result = assertDoesNotThrow(() -> loginHandler.login("test@example.com", "password123"));
+
+        assertEquals("demo-token:test@example.com", result);
+        verify(userManager).login("test@example.com", "password123");
+    }
+
+    @Test
+    void testDemoLogoutSkipsFirebase() {
+        assertTrue(loginHandler.logout("demo-token:test@example.com"));
+        verifyNoInteractions(userManager);
     }
 }

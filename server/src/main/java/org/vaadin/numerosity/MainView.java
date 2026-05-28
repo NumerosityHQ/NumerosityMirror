@@ -30,8 +30,7 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
 import java.util.concurrent.ExecutionException;
 
 /**
- * Modern MainView with dark/light mode toggle and responsive design.
- * Features a minimalist aesthetic with smooth transitions.
+ * Main landing page with navigation, theme switching, and login entry points.
  */
 @Route("")
 @AnonymousAllowed
@@ -84,7 +83,8 @@ public class MainView extends VerticalLayout {
 
         navLinks.add(createNavLink("Practice", bank.class),
             createNavLink("Rush", rush.class),
-            createNavLink("Daily", zen.class));
+            createNavLink("Daily", zen.class),
+            createNavLink("Dashboard", org.vaadin.numerosity.ui.views.DashboardView.class));
 
         themeToggleButton = new Button();
         themeToggleButton.addThemeVariants(ButtonVariant.LUMO_ICON);
@@ -149,7 +149,6 @@ public class MainView extends VerticalLayout {
 
     private void toggleTheme() {
         isDarkMode = !isDarkMode;
-        // Apply theme directly to UI element
         UI.getCurrent().getElement().setAttribute("theme", isDarkMode ? "dark" : "light");
         themeToggleButton.setIcon(new Icon(isDarkMode ? VaadinIcon.EYE : VaadinIcon.MOON));
     }

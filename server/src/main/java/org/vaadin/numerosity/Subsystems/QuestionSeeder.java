@@ -47,7 +47,6 @@ public class QuestionSeeder implements CommandLineRunner {
                 List<Map<String, Object>> questions = data.get("questions");
                 logger.info("Loaded {} questions from comprehensive database", questions.size());
                 
-                // Log question distribution by category
                 questions.stream()
                     .collect(java.util.stream.Collectors.groupingBy(
                         q -> (String) q.get("category"),

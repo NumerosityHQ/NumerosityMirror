@@ -49,28 +49,20 @@ public class ApplicationConfig {
     @Bean
     @Lazy
     public Firestore firestore() {
-        if (credentialsPath == null || credentialsPath.isBlank()) {
-            log.warn("Property 'firebase.credentials.path' is not set. "
-                    + "Firestore features will be unavailable.");
+        if (FirebaseConfigurationSupport.isDemoMode(credentialsPath, projectId)) {
+            log.info("Firebase configuration is empty. Running in demo mode; Firestore is disabled.");
             return null;
         }
 
-        try {
-            InputStream serviceAccount = this.getClass().getClassLoader().getResourceAsStream(credentialsPath);
-            if (serviceAccount == null) {
-                log.warn("Firebase credentials file '{}' not found on classpath. "
-                        + "Firestore features will be unavailable until a valid service-account "
-                        + "JSON is placed at src/main/resources/{}.",
-                        credentialsPath, credentialsPath);
-                return null;
-            }
-
+        try (InputStream serviceAccount = FirebaseConfigurationSupport.openCredentialsStream(credentialsPath)) {
             FirebaseOptions options = FirebaseOptions.builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
                     .setProjectId(projectId)
                     .build();
 
-            FirebaseApp firebaseApp = FirebaseApp.initializeApp(options);
+            FirebaseApp firebaseApp = FirebaseApp.getApps().isEmpty()
+                    ? FirebaseApp.initializeApp(options)
+                    : FirebaseApp.getInstance();
             Firestore fs = FirestoreClient.getFirestore(firebaseApp);
             log.info("Firestore initialised successfully for project '{}'.", projectId);
             return fs;

@@ -23,18 +23,14 @@ import com.google.gson.Gson;
 @Service
 public class DataPlotter {
 
-    /** Logger for this class. */
     private static final Logger logger = LoggerFactory.getLogger(DataPlotter.class);
-    /** Directory path for storing plot data. */
     private static final String PLOT_DIR = "database/dataplots";
-    /** Gson instance for JSON serialization. */
     private final Gson gson = new Gson();
 
     /**
      * Constructor that initializes the DataPlotter by ensuring the plot directory exists.
      */
     public DataPlotter() {
-        // Ensure the plot directory exists
         Path plotDirPath = Paths.get(PLOT_DIR);
         if (!Files.exists(plotDirPath)) {
             try {
@@ -88,7 +84,6 @@ public class DataPlotter {
         data.put("difficulty", difficulty);
         data.put("question_tag", questionTag);
 
-        // Format the current timestamp
         Instant now = Instant.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
                 .withZone(ZoneId.of("UTC"));
@@ -113,7 +108,6 @@ public class DataPlotter {
             return;
         }
 
-        // Create a unique filename for each plot
         String filename = String.format("%s_%s_%s.json", userId, questionId, Instant.now().toEpochMilli());
         Path filePath = Paths.get(PLOT_DIR, filename).toAbsolutePath();
 
@@ -123,7 +117,7 @@ public class DataPlotter {
             logger.info("Saved plot data to: {}", filePath);
         } catch (IOException e) {
             logger.error("Failed to save plot data to {}: {}", filePath, e.getMessage(), e);
-            throw e; // Re-throw the exception after logging
+            throw e;
         }
     }
 }

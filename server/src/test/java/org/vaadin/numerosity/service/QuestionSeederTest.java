@@ -14,9 +14,6 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-/**
- * Unit tests for QuestionSeeder.
- */
 @ExtendWith(MockitoExtension.class)
 class QuestionSeederTest {
 
@@ -28,24 +25,18 @@ class QuestionSeederTest {
 
     @Test
     void testGetQuestionsByCategory() {
-        // This test would require the JSON file to be loaded
-        // In a real test, we would mock the file loading
         List<Map<String, Object>> questions = questionSeeder.getQuestionsByCategory("Algebra");
-        
-        // Verify the method returns a list (may be empty if file not found)
         assertNotNull(questions);
     }
 
     @Test
     void testGetQuestionsByDifficulty() {
         List<Map<String, Object>> questions = questionSeeder.getQuestionsByDifficulty("easy");
-        
         assertNotNull(questions);
     }
 
     @Test
     void testSeedQuestions() {
-        // Test that seeding doesn't throw exceptions
         assertDoesNotThrow(() -> questionSeeder.seedQuestions());
     }
 }

@@ -26,7 +26,6 @@ public class QuestionRestController {
      */
     @GetMapping
     public ResponseEntity<Map<String, Object>> getAllQuestions() {
-        // This would typically return all questions from a service
         return ResponseEntity.ok(Map.of("message", "Use /category/{category} or /difficulty/{difficulty} to filter"));
     }
 
@@ -57,15 +56,12 @@ public class QuestionRestController {
     public ResponseEntity<Map<String, Object>> getRandomQuestion(
             @RequestParam(required = false) String category,
             @RequestParam(required = false) String difficulty) {
-        
         List<Map<String, Object>> questions;
-        
         if (category != null) {
             questions = questionSeeder.getQuestionsByCategory(category);
         } else if (difficulty != null) {
             questions = questionSeeder.getQuestionsByDifficulty(difficulty);
         } else {
-            // Return a sample question for demo
             questions = List.of(Map.of(
                 "id", "demo_1",
                 "text", "What is 2 + 2?",
@@ -80,11 +76,9 @@ public class QuestionRestController {
                 "category", "Arithmetic"
             ));
         }
-        
         if (questions.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        
         int randomIndex = ThreadLocalRandom.current().nextInt(questions.size());
         return ResponseEntity.ok(questions.get(randomIndex));
     }

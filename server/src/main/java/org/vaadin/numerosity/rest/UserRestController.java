@@ -30,6 +30,13 @@ public class UserRestController {
         return ResponseEntity.ok("User API is available. Use POST to create a user.");
     }
 
+    @GetMapping("/{userId}")
+    public ResponseEntity<?> getUser(@org.springframework.web.bind.annotation.PathVariable String userId) {
+        return userService.getUserStats(userId)
+                .<ResponseEntity<?>>map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
     @PostMapping
     public ResponseEntity<String> createUser(@RequestBody UserDTO userDTO) {
         if (userDTO == null || userDTO.getUserId() == null || userDTO.getUsername() == null) {

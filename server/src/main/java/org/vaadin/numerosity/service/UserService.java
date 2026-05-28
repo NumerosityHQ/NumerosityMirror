@@ -21,4 +21,8 @@ public class UserService {
     public void createUser(String userId, String username) {
         userRepository.createUserDocument(userId, username);
     }
+
+    public java.util.Optional<java.util.Map<String, Object>> getUserStats(String userId) {
+        return userRepository.getUserStats(userId);
+    }
 }
